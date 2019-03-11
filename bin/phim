@@ -2,12 +2,15 @@
 <?php
 /**
  * usage:
- * phim --action projects/list
- * phim --action project/open --projectdir '~/funproject | php,inc'
- * phim --action project/search --phrase 'SuperClass' (search for class)
- * phim --action project/search --phrase 'hello' (search for function)
- * phim --action project/search --phrase 'config/dev.php' (search for file)
+ * phim --action projects.list
+ * phim --action project.open --projectdir '~/funproject | php,inc'
+ * phim --action project.search --words 'SuperClass' (search for class)
+ * phim --action project.search --words 'hello' (search for function)
+ * phim --action project.search --words 'config/dev.php' (search for file)
  * phim --action jumpto --target '~/funproject/SuperClass.php(18)' (jump to a file and a certain line number)
  * phim --action debug --runner 'curl http://localhost' --file afile.php --line 10 --variable sum
  * phim --action project/index --projectdir '~/funproject | php,inc'
  */
+spl_autoload_register(function($class) {
+    require __DIR__.'/../src/'.str_replace("\\", "/", $class).'.php';
+});
