@@ -1,9 +1,13 @@
 <?php
 return [
-    'search' => [
+    'project.search' => [
         'service' => 'Search',
         'description' => 'Search words in a project',
         'options' => [
+            'project' => [
+                'description' => 'Project Information',
+                'require' => true
+            ],
             'words' => [
                 'description' => 'Words to search',
                 'require' => true
