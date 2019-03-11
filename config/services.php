@@ -4,15 +4,15 @@ return [
         'service' => 'Search',
         'description' => 'Search words in a project',
         'options' => [
-            'words:w' => [
+            'words' => [
                 'description' => 'Words to search',
                 'require' => true
             ],
-            'file:f' => [
+            'file' => [
                 'description' => 'The file containing the words to search',
                 'require' => true
             ],
-            'line:l' => [
+            'line' => [
                 'description' => 'The line containing the words to search',
                 'require' => true
             ]

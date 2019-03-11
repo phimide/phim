@@ -21,9 +21,20 @@ class Bootstrap
 
     public function init() {
         $args = $this->cli->parse($GLOBALS['argv']);
-        $serviceName = $this->serviceName;
-        $serviceClass = "Service\\$serviceName";
-        $service = new $serviceClass($args->getOpts());
-        $service->start();
+        $command = $args->getCommand();
+        $serviceClass = "Service\\{$this->serviceName}";
+        $options = $args->getOpts();
+        $requirementIsMet = true;
+        foreach($options as $key => $val) {
+            if ($this->config[$command]['options'][$key]['require'] && strlen($val) === 0) {
+                print "Please provide value for $key (--$key)\n";
+                $requirementIsMet = false;
+                break;
+            }
+        }
+        if ($requirementIsMet) {
+            $service = new $serviceClass($options);
+            $service->start();
+        }
     }
 }
