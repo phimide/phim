@@ -2,14 +2,14 @@
 <?php
 /**
  * usage:
- * phim --action projects.list
- * phim --action project.open --projectdir '~/funproject | php,inc'
- * phim --action project.search --words 'SuperClass' (search for class)
- * phim --action project.search --words 'hello' (search for function)
- * phim --action project.search --words 'config/dev.php' (search for file)
- * phim --action jumpto --target '~/funproject/SuperClass.php(18)' (jump to a file and a certain line number)
- * phim --action debug --runner 'curl http://localhost' --file afile.php --line 10 --variable sum
- * phim --action project/index --projectdir '~/funproject | php,inc'
+ * phim projects.list
+ * phim project.open --projectdir '~/funproject | php,inc'
+ * phim project.search --words 'SuperClass' (search for class)
+ * phim project.search --words 'hello' (search for function)
+ * phim project.search --words 'config/dev.php' (search for file)
+ * phim jumpto --target '~/funproject/SuperClass.php(18)' (jump to a file and a certain line number)
+ * phim debug --runner 'curl http://localhost' --file afile.php --line 10 --variable sum
+ * phim project/index --projectdir '~/funproject | php,inc'
  */
 require_once __DIR__.'/../vendor/autoload.php';
 
@@ -18,6 +18,5 @@ $loader->add("Core", __DIR__ . "/../src");
 $loader->add("Service", __DIR__ . "/../src");
 $loader->register();
 
-$bootstrap = new Core\Bootstrap();
-$args = $bootstrap->getOptions();
-print $args['action'];
+$bootstrap = new Core\Bootstrap(require __DIR__.'/../config/services.php');
+$bootstrap->init();
