@@ -34,6 +34,11 @@ class Bootstrap
         }
         if ($requirementIsMet) {
             $service = new $serviceClass($options);
+            //see if this is a project specific service
+            if (isset($options['project'])) {
+                $project = new Project($options['project']);
+                $service->setProject($project);
+            }
             $service->start();
         }
     }
