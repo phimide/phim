@@ -28,7 +28,7 @@ $config['commands'] = [
 
     'project.createindex' => [
         'service' => 'CreateIndex',
-        'description' => 'Index the classes, traits, interfaces, functions in a project',
+        'description' => 'create indexes for the classes, traits, interfaces, functions in a project',
         'options' => [
             'project' => [
                 'description' => 'Project Information',
@@ -38,6 +38,6 @@ $config['commands'] = [
     ]
 ];
 
-$config['dataDir'] = "/tmp/phim/data";
+$config['dataRoot'] = "/tmp/phim/data";
 
 return $config;
