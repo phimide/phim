@@ -38,7 +38,8 @@ class Search extends BaseService
 
         $result = '';
         if (strlen($word) > 0) {
-            $wordPop = array_pop(explode("/", $word));
+            $wordComps = explode("/", $word);
+            $wordPop = array_pop($wordComps);
             $projectIndex = $project->getIndex();
             //first search the class index
             $classesIndex = $projectIndex['classes'];
@@ -53,6 +54,6 @@ class Search extends BaseService
             }
         }
 
-        return $result;
+        echo $result;
     }
 }
