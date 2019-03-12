@@ -1,5 +1,8 @@
 <?php
-return [
+
+$config = [];
+
+$config['commands'] = [
     'project.search' => [
         'service' => 'Search',
         'description' => 'Search words in a project',
@@ -21,5 +24,20 @@ return [
                 'require' => true
             ]
         ]
+    ],
+
+    'project.createindex' => [
+        'service' => 'CreateIndex',
+        'description' => 'Index the classes, traits, interfaces, functions in a project',
+        'options' => [
+            'project' => [
+                'description' => 'Project Information',
+                'require' => true
+            ]
+        ]
     ]
 ];
+
+$config['dataDir'] = "/tmp/phim/data";
+
+return $config;

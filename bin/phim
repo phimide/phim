@@ -18,5 +18,5 @@ $loader->add("Core", __DIR__ . "/../src");
 $loader->add("Service", __DIR__ . "/../src");
 $loader->register();
 
-$bootstrap = new Core\Bootstrap(require __DIR__.'/../config/services.php');
+$bootstrap = new Core\Bootstrap(require __DIR__.'/../config/config.php');
 $bootstrap->init();
