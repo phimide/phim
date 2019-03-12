@@ -30,4 +30,13 @@ class Project {
     public function getDataDir() {
         return $this->dataDir;
     }
+
+    /**
+     * get the project index
+     */
+    public function getIndex() {
+        $projectIndexFile = $this->dataDir.'/project.index';
+        $result = JSON_decode(file_get_contents($projectIndexFile), true);
+        return $result;
+    }
 }

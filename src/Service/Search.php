@@ -33,5 +33,26 @@ class Search extends BaseService
 
         //now remove all "(,),;"
         $word = str_replace(['(',')',';'], "",$word);
+        //replace \ to /
+        $word = str_replace("\\","/", $word);
+
+        $result = '';
+        if (strlen($word) > 0) {
+            $wordPop = array_pop(explode("/", $word));
+            $projectIndex = $project->getIndex();
+            //first search the class index
+            $classesIndex = $projectIndex['classes'];
+            if (isset($classesIndex[$wordPop])) {
+                //now fine tune the result, no need to show unrelated files
+                $fileInfos = $classesIndex[$wordPop];
+                foreach($fileInfos as $fileInfo) {
+                    if (strpos($fileInfo[0], $word) !== FALSE) {
+                        $result .= "{$fileInfo[0]}({$fileInfo[1]})\n";
+                    }
+                }
+            }
+        }
+
+        return $result;
     }
 }
