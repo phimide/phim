@@ -38,6 +38,6 @@ $config['commands'] = [
     ]
 ];
 
-$config['dataRoot'] = "/tmp/phim/data";
+$config['dataRoot'] = "~/.vim/tmp";
 
 return $config;

@@ -12,11 +12,14 @@ class Project {
 
     public function __construct($info, $dataRoot) {
         $projectDetails = explode("|", $info);
-        $this->path = $projectDetails[0];
-        $this->fileExtensions = explode(",", $projectDetails[1]);
+        $path = trim($projectDetails[0]);
+        $path = $this->getRealPath($path);
+        $this->path = $path;
+        $this->fileExtensions = explode(",", trim($projectDetails[1]));
         $this->dataRoot = $dataRoot;
-        $this->dataDir = $dataRoot.'/projects/'.md5($this->path);
-        system('mkdir -p '.$this->dataDir);
+        $dataDir = $this->getRealPath($dataRoot.'/projects').'/'.md5($this->path);
+        system("mkdir -p {$dataDir}");
+        $this->dataDir = $dataDir;
     }
 
     public function getPath() {
@@ -38,5 +41,11 @@ class Project {
         $projectIndexFile = $this->dataDir.'/project.index';
         $result = JSON_decode(file_get_contents($projectIndexFile), true);
         return $result;
+    }
+
+    private function getRealPath($path) {
+        $cmd = "find $path -type d | head -n 1";
+        $path = trim(shell_exec($cmd));
+        return $path;
     }
 }

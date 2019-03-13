@@ -7,7 +7,7 @@ class Search extends BaseService
 {
     public function start() {
         $project = $this->getProject();
-        $path = trim(shell_exec('pwd '.$project->getPath()));
+
         $extendsions = $project->getFileExtensions();
 
         $file = $this->options['file'];
@@ -47,9 +47,11 @@ class Search extends BaseService
             if (isset($classesIndex[$wordPop])) {
                 //now fine tune the result, no need to show unrelated files
                 $fileInfos = $classesIndex[$wordPop];
+                $lineNum = 0;
                 foreach($fileInfos as $fileInfo) {
                     if (strpos($fileInfo[0], $word) !== FALSE) {
-                        $result .= "{$fileInfo[0]}({$fileInfo[1]})\n";
+                        $lineNum ++;
+                        $result .= "$lineNum. {$fileInfo[0]}({$fileInfo[1]})\n";
                     }
                 }
             }
@@ -87,11 +89,13 @@ class Search extends BaseService
         $functionsIndex = $projectIndex['functions'];
         if (isset($functionsIndex[$word])) {
             $fileInfos = $functionsIndex[$word];
+            $lineNum = 0;
             foreach($fileInfos as $fileInfo) {
-                $result .= "{$fileInfo[0]}({$fileInfo[1]})\n";
+                $lineNum ++;
+                $result .= "$lineNum. {$fileInfo[0]}({$fileInfo[1]})\n";
             }
         }
-        
+
         echo $result;
     }
 }
