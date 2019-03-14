@@ -1,6 +1,7 @@
 <?php
 namespace Service;
 
+//use Core\BaseService;
 use \Core\BaseService as BaseService;
 
 class Search extends BaseService
@@ -18,24 +19,7 @@ class Search extends BaseService
         $contextLine = $lines[$line - 1];
         $contextPosition = $this->options['pos'];
 
-        //first, try to see if this is a possible class
-        $contextLine = str_replace('::',' ', $contextLine);
-
-        $leftPart = substr($contextLine, 0, $contextPosition - 1);
-        $rightPart = substr($contextLine, $contextPosition - 1, strlen($contextLine));
-
-        $leftTokens = explode(" ", $leftPart);
-        $rightTokens = explode(" ", $rightPart);
-
-        $wordLeftPart = array_pop($leftTokens);
-        $wordRightPart = array_shift($rightTokens);
-
-        $word = $wordLeftPart.$wordRightPart;
-
-        //now remove all "(,),;"
-        $word = str_replace(['(',')',';'], "",$word);
-        //replace \ to /
-        $word = str_replace("\\","/", $word);
+        $word = $this->getWordFromLineAndPosition($contextLine, $contextPosition);
 
         $result = '';
         if (strlen($word) > 0) {
@@ -66,24 +50,6 @@ class Search extends BaseService
 
         //now there is no match on the classes, try to find the functions
         //look to the left
-        $wordLeftPos = $contextPosition - 1;
-        for ($i = $wordLeftPos; $i >= 0; $i--) {
-            if (in_array($contextLine[$i], ['>',':',' ',','])) {
-                $wordLeftPos = $i + 1;
-                break;
-            }
-        }
-        //look to the right
-        $contextLineLength = strlen($contextLine);
-        $wordRightPos = $contextPosition;
-        for ($i = $wordRightPos; $i < $contextLineLength; $i++) {
-            if (in_array($contextLine[$i], ['>',':',' ','(',')'])) {
-                $wordRightPos = $i - 1;
-                break;
-            }
-        }
-        $word = substr($contextLine, $wordLeftPos, $contextPosition - $wordLeftPos)
-            .substr($contextLine, $contextPosition, $wordRightPos - $contextPosition + 1);
 
         $projectIndex = $project->getIndex();
         $functionsIndex = $projectIndex['functions'];
@@ -97,5 +63,41 @@ class Search extends BaseService
         }
 
         echo $result;
+    }
+
+    private function getWordFromLineAndPosition($contextLine, $contextPosition) {
+
+        $leftStoppingSymbolsHash = ['>' => 1, ':' => 1, ',' => 1, ';' => 1,' ' => 1];
+        $rightStoppingSymbolsHash = ['>' => 1,':' => 1,' ' => 1,'(' => 1,')' => 1,';' => 1];
+
+        //look to the left
+        $wordLeftPos = $contextPosition;
+        for ($i = $wordLeftPos; $i >= 0; $i--) {
+            $char = $contextLine[$i];
+            $wordLeftPos = $i + 1;
+            if (isset($leftStoppingSymbolsHash[$char])) {
+                break;
+            }
+        }
+        //look to the right
+        $contextLineLength = strlen($contextLine);
+        $wordRightPos = $contextPosition + 1;
+        for ($i = $wordRightPos; $i < $contextLineLength; $i++) {
+            $char = $contextLine[$i];
+            $wordRightPos = $i - 1;
+            if (isset($rightStoppingSymbolsHash[$char])) {
+                break;
+            }
+        }
+
+        $wordLeftPart = substr($contextLine, $wordLeftPos, $contextPosition - $wordLeftPos);
+        $wordRightPart = substr($contextLine, $contextPosition, $wordRightPos - $contextPosition + 1);
+        $word = $wordLeftPart.$wordRightPart;
+
+        //also, replace \ to /
+        $word = str_replace("\\", "/", $word);
+
+        return $word;
+
     }
 }
