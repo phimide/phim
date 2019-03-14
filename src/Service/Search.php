@@ -66,28 +66,27 @@ class Search extends BaseService
     }
 
     private function getWordFromLineAndPosition($contextLine, $contextPosition) {
-
         $leftStoppingSymbolsHash = ['>' => 1, ':' => 1, ',' => 1, ';' => 1,' ' => 1];
-        $rightStoppingSymbolsHash = ['>' => 1,':' => 1,' ' => 1,'(' => 1,')' => 1,';' => 1];
+        $rightStoppingSymbolsHash = ['>' => 1,':' => 1,' ' => 1,'(' => 1,')' => 1,';' => 1,',' => 1];
 
         //look to the left
         $wordLeftPos = $contextPosition;
-        for ($i = $wordLeftPos; $i >= 0; $i--) {
+        for ($i = $contextPosition - 1; $i >= 0; $i--) {
             $char = $contextLine[$i];
-            $wordLeftPos = $i + 1;
             if (isset($leftStoppingSymbolsHash[$char])) {
                 break;
             }
+            $wordLeftPos = $i;
         }
         //look to the right
         $contextLineLength = strlen($contextLine);
         $wordRightPos = $contextPosition + 1;
-        for ($i = $wordRightPos; $i < $contextLineLength; $i++) {
+        for ($i = $contextPosition + 1; $i < $contextLineLength; $i++) {
             $char = $contextLine[$i];
-            $wordRightPos = $i - 1;
             if (isset($rightStoppingSymbolsHash[$char])) {
                 break;
             }
+            $wordRightPos = $i;
         }
 
         $wordLeftPart = substr($contextLine, $wordLeftPos, $contextPosition - $wordLeftPos);
@@ -98,6 +97,5 @@ class Search extends BaseService
         $word = str_replace("\\", "/", $word);
 
         return $word;
-
     }
 }
