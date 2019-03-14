@@ -39,5 +39,10 @@ $config['commands'] = [
 ];
 
 $config['dataRoot'] = "~/.vim/tmp";
+$config['cache'] = [
+    'type' => 'redis',
+    'host' => '127.0.0.1',
+    'port' => 6379
+];
 
 return $config;

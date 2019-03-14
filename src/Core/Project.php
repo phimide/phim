@@ -9,16 +9,20 @@ class Project {
     private $path;
     private $fileExtensions;
     private $dataRoot;
+    private $cacheConfig;
     private $projectIndexFile;
+    private $projectHash;
 
-    public function __construct($info, $dataRoot) {
+    public function __construct($info, $dataRoot, $cacheConfig) {
         $projectDetails = explode("|", $info);
         $path = trim($projectDetails[0]);
         $path = $this->getRealPath($path);
         $this->path = $path;
         $this->fileExtensions = explode(",", trim($projectDetails[1]));
         $this->dataRoot = $dataRoot;
-        $dataDir = $this->getRealPath($dataRoot.'/projects').'/'.md5($this->path);
+        $this->cacheConfig = $cacheConfig;
+        $this->projectHash = md5($this->path);
+        $dataDir = $this->getRealPath($dataRoot.'/projects').'/'.$this->projectHash;
         system("mkdir -p {$dataDir}");
         $this->dataDir = $dataDir;
         $this->projectIndexFile = $this->dataDir.'/project.index';
@@ -40,7 +44,28 @@ class Project {
      * get the project index
      */
     public function getIndex() {
-        $result = JSON_decode(file_get_contents($this->projectIndexFile), true);
+        //first, check in memory storage
+        $projectIndexDataFound = false;
+        $projectIndexData = "";
+        try {
+            $cache = InMemoryDataStore::getInstance($this->cacheConfig);
+            $key = $this->getProjectIndexDataKey();
+            $projectIndexData = $cache->get($key);
+        } catch (Exception $e) {
+            print $e->getMessage();
+        }
+
+        if (strlen($projectIndexData) > 0) {
+            $projectIndexDataFound = true;
+        }
+
+        if (!$projectIndexDataFound) {
+            //index data not found in memory, get it from the file
+            $projectIndexData = file_get_contents($this->projectIndexFile);
+        }
+
+        $result = json_decode($projectIndexData, true);
+
         return $result;
     }
 
@@ -48,7 +73,17 @@ class Project {
      * save the project index
      */
     public function saveIndex($indexData) {
-        file_put_contents($this->projectIndexFile, JSON_encode($indexData));
+        $indexDataJSON = JSON_encode($indexData);
+        //persist to file
+        file_put_contents($this->projectIndexFile, $indexDataJSON);
+        //also save in memory
+        $cache = InMemoryDataStore::getInstance($this->cacheConfig);
+        $key = $this->getProjectIndexDataKey();
+        $cache->set($key, $indexDataJSON);
+    }
+
+    private function getProjectIndexDataKey() {
+        return 'phim-project-data-index-'.$this->projectHash;
     }
 
     private function getRealPath($path) {

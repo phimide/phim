@@ -37,7 +37,7 @@ class Bootstrap
             $service = new $serviceClass($options, $this->config);
             //see if this is a project specific service
             if (isset($options['project'])) {
-                $project = new Project($options['project'], $this->config['dataRoot']);
+                $project = new Project($options['project'], $this->config['dataRoot'], $this->config['cache']);
                 $service->setProject($project);
             }
             $service->start();
