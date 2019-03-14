@@ -6,6 +6,8 @@
 namespace Core;
 
 class Project {
+    use LoggableTrait;
+
     private $path;
     private $fileExtensions;
     private $dataRoot;
@@ -51,8 +53,8 @@ class Project {
             $cache = InMemoryDataStore::getInstance($this->cacheConfig);
             $key = $this->getProjectIndexDataKey();
             $projectIndexData = $cache->get($key);
-        } catch (Exception $e) {
-            print $e->getMessage();
+        } catch (\RedisException $e) {
+            $this->logger->log("Redis Error: ".$e->getMessage());
         }
 
         if (strlen($projectIndexData) > 0) {
@@ -77,9 +79,13 @@ class Project {
         //persist to file
         file_put_contents($this->projectIndexFile, $indexDataJSON);
         //also save in memory
-        $cache = InMemoryDataStore::getInstance($this->cacheConfig);
-        $key = $this->getProjectIndexDataKey();
-        $cache->set($key, $indexDataJSON);
+        try {
+            $cache = InMemoryDataStore::getInstance($this->cacheConfig);
+            $key = $this->getProjectIndexDataKey();
+            $cache->set($key, $indexDataJSON);
+        } catch (\RedisException $e) {
+            $this->logger->log("Redis Error: ".$e->getMessage());
+        }
     }
 
     private function getProjectIndexDataKey() {

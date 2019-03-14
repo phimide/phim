@@ -3,6 +3,8 @@ namespace Core;
 
 class BaseService
 {
+    use LoggableTrait; 
+
     protected $options;
     protected $config;
     protected $project;
