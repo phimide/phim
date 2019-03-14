@@ -68,7 +68,7 @@ class Search extends BaseService
         //look to the left
         $wordLeftPos = $contextPosition - 1;
         for ($i = $wordLeftPos; $i >= 0; $i--) {
-            if (in_array($contextLine[$i], ['>',':',' '])) {
+            if (in_array($contextLine[$i], ['>',':',' ',','])) {
                 $wordLeftPos = $i + 1;
                 break;
             }

@@ -60,7 +60,6 @@ class CreateIndex extends BaseService
             'classes' => $classesHash
         ];
 
-        $projectIndex = json_encode($data);
-        file_put_contents($dataDir.'/project.index', $projectIndex);
+        $this->project->saveIndex($data);
     }
 }

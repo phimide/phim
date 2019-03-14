@@ -9,6 +9,7 @@ class Project {
     private $path;
     private $fileExtensions;
     private $dataRoot;
+    private $projectIndexFile;
 
     public function __construct($info, $dataRoot) {
         $projectDetails = explode("|", $info);
@@ -20,6 +21,7 @@ class Project {
         $dataDir = $this->getRealPath($dataRoot.'/projects').'/'.md5($this->path);
         system("mkdir -p {$dataDir}");
         $this->dataDir = $dataDir;
+        $this->projectIndexFile = $this->dataDir.'/project.index';
     }
 
     public function getPath() {
@@ -38,9 +40,15 @@ class Project {
      * get the project index
      */
     public function getIndex() {
-        $projectIndexFile = $this->dataDir.'/project.index';
-        $result = JSON_decode(file_get_contents($projectIndexFile), true);
+        $result = JSON_decode(file_get_contents($this->projectIndexFile), true);
         return $result;
+    }
+
+    /**
+     * save the project index
+     */
+    public function saveIndex($indexData) {
+        file_put_contents($this->projectIndexFile, JSON_encode($indexData));
     }
 
     private function getRealPath($path) {
