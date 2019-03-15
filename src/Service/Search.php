@@ -74,7 +74,7 @@ class Search extends BaseService
 
     private function getWordFromLineAndPosition($contextLine, $contextPosition) {
         $leftStoppingSymbolsHash = ['>' => 1, ':' => 1, ',' => 1, ';' => 1,' ' => 1];
-        $rightStoppingSymbolsHash = ['>' => 1,':' => 1,' ' => 1,'(' => 1,')' => 1,';' => 1,',' => 1];
+        $rightStoppingSymbolsHash = ['>' => 1,':' => 1,' ' => 1,'(' => 1,')' => 1,';' => 1,',' => 1,'{' => 1];
 
         //look to the left
         $wordLeftPos = $contextPosition;
