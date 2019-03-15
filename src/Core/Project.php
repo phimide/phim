@@ -54,7 +54,7 @@ class Project {
             $key = $this->getProjectIndexDataKey();
             $projectIndexData = $cache->get($key);
         } catch (\RedisException $e) {
-            $this->logger->log("Redis Error: ".$e->getMessage());
+            $this->logger->log("Redis Error: ".$e->getTraceAsString());
         }
 
         if (strlen($projectIndexData) > 0) {
@@ -84,7 +84,7 @@ class Project {
             $key = $this->getProjectIndexDataKey();
             $cache->set($key, $indexDataJSON);
         } catch (\RedisException $e) {
-            $this->logger->log("Redis Error: ".$e->getMessage());
+            $this->logger->log("Redis Error: ".$e->getTraceAsString());
         }
     }
 
