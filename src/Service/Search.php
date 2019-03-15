@@ -9,8 +9,6 @@ class Search extends BaseService
     public function start() {
         $project = $this->getProject();
 
-        $extendsions = $project->getFileExtensions();
-
         $file = $this->options['file'];
         $line = $this->options['line'];
 
