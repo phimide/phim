@@ -36,6 +36,15 @@ class Search extends BaseService
                         $result .= "$lineNum. {$fileInfo[0]}({$fileInfo[1]})\n";
                     }
                 }
+                //if we did not find it, we search for the pure word
+                if ($lineNum === 0) {
+                    foreach($fileInfos as $fileInfo) {
+                        if (strpos($fileInfo[0], $wordPop) !== FALSE) {
+                            $lineNum ++;
+                            $result .= "$lineNum. {$fileInfo[0]}({$fileInfo[1]})\n";
+                        }
+                    }
+                }
             }
         }
 
