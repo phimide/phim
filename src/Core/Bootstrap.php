@@ -34,15 +34,8 @@ class Bootstrap
             }
         }
         if ($requirementIsMet) {
-            $logger = new Logger($this->config);
+            Config::set($this->config);
             $service = new $serviceClass($options, $this->config);
-            $service->setLogger($logger);
-            //see if this is a project specific service
-            if (isset($options['project'])) {
-                $project = new Project($options['project'], $this->config['dataRoot'], $this->config['cache']);
-                $project->setLogger($logger);
-                $service->setProject($project);
-            }
             $service->start();
         }
     }

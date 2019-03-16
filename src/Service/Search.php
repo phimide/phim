@@ -2,12 +2,13 @@
 namespace Service;
 
 //use Core\BaseService;
-use \Core\BaseService as BaseService;
+use Core\BaseService as BaseService;
+use Core\Project as Project;
 
 class Search extends BaseService
 {
     public function start() {
-        $project = $this->getProject();
+        $project = Project::getInstance($this->options['projecthash']);
 
         $file = $this->options['file'];
         $line = $this->options['line'];

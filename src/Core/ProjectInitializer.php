@@ -1,16 +1,33 @@
 <?php
-namespace Service;
+namespace Core;
 
-use \Core\BaseService as BaseService;
-
-class CreateIndex extends BaseService
+class ProjectInitializer
 {
-    public function start() {
-        $dataDir = $this->project->getDataDir();
+    public function init($info) {
+        $projectDetails = explode("|", $info);
+        $path = trim($projectDetails[0]);
+        $fileExtensionsStr = trim($projectDetails[1]);
+        $projectInfo = $path."|".$fileExtensionsStr;
+        $projectHash = md5($projectInfo);
+        $fileExtensions = explode(",", $fileExtensionsStr);
+        $dataRoot = Config::get('dataRoot');
+        $dataDir = $dataRoot.'/'.$projectHash;
+        system("mkdir -p {$dataDir}");
 
-        $targetDirectory = $this->project->getPath();
+        $project = Project::getInstance($projectHash);
+
+        //now create the project index
+        $this->createIndex($path, $fileExtensions, $project);
+
+        return $projectHash;
+    }
+
+    /**
+     * save the project index
+     */
+    public function createIndex($path, $fileExtensions, $project) {
         //find all php files
-        $cmd = "find $targetDirectory -type f -name \"*.php\" -not -path \"*.git*\"";
+        $cmd = "find $path -type f -name \"*.php\" -not -path \"*.git*\"";
         $output = shell_exec($cmd);
         $fileList = explode("\n", trim($output));
         $functionFinder = '/function[\s\n]+(\S+)[\s\n]*\(/';
@@ -38,7 +55,6 @@ class CreateIndex extends BaseService
                     }
                 }
             }
-
             # Find all php classes
             foreach($classFinders as $classFinder) {
                 preg_match_all( $classFinder, $content , $matches, \PREG_OFFSET_CAPTURE);
@@ -54,12 +70,12 @@ class CreateIndex extends BaseService
                 }
             }
         }
-
         $data = [
             'functions' => $functionsHash,
             'classes' => $classesHash
         ];
 
-        $this->project->saveIndex($data);
+        $project->saveIndex($data);
     }
+
 }

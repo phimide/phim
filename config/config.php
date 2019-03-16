@@ -3,12 +3,24 @@
 $config = [];
 
 $config['commands'] = [
+    'project.init' => [
+        'service' => 'Initialize',
+        'description' => 'Initialize the project',
+        'options' => [
+            'project' => [
+                'description' => 'Project Information',
+                'require' => true
+            ],
+
+        ]
+    ],
+
     'project.search' => [
         'service' => 'Search',
         'description' => 'Search words in a project',
         'options' => [
-            'project' => [
-                'description' => 'Project Information',
+            'projecthash' => [
+                'description' => 'Project Hash',
                 'require' => true
             ],
             'file' => [
@@ -24,26 +36,9 @@ $config['commands'] = [
                 'require' => true
             ]
         ]
-    ],
-
-    'project.createindex' => [
-        'service' => 'CreateIndex',
-        'description' => 'create indexes for the classes, traits, interfaces, functions in a project',
-        'options' => [
-            'project' => [
-                'description' => 'Project Information',
-                'require' => true
-            ]
-        ]
     ]
 ];
 
-$config['dataRoot'] = "~/.vim/tmp";
-$config['cache'] = [
-    'type' => 'redis',
-    'host' => '127.0.0.1',
-    'port' => 6379
-];
-$config['log'] = "~/.vim/tmp/phim.log";
+$config['dataRoot'] = "/usr/local/phim/projects";
 
 return $config;
