@@ -82,7 +82,7 @@ class Project {
         $dataDir = Config::get('dataRoot').'/'.$this->projectHash;
         $classIndexData = $indexData['classes'];
         foreach($indexData['classes'] as $class => $fileInfo) {
-            if ($class[0] !== '*') { //do not know why, there is a class starts with *, we should exclude it
+            if (@$class[0] !== '*') { //do not know why, there is a class starts with *, we should exclude it
                 $indexFileBasename = "class.$class.json";
                 $indexFile = $dataDir.'/'.$indexFileBasename;
                 file_put_contents($indexFile, json_encode($fileInfo));
