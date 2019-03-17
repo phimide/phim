@@ -3,6 +3,18 @@
 $config = [];
 
 $config['commands'] = [
+    'project.gethash' => [
+        'service' => 'GetHash',
+        'description' => 'Get the project hash',
+        'options' => [
+            'project' => [
+                'description' => 'Project Information',
+                'require' => true
+            ],
+
+        ]
+    ],
+
     'project.init' => [
         'service' => 'Initialize',
         'description' => 'Initialize the project',
