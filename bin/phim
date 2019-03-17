@@ -1,15 +1,8 @@
 #!/usr/bin/env php
 <?php
 /**
- * usage:
- * phim projects.list
- * phim project.open --project '~/funproject | php,inc'
- * phim project.search --words 'SuperClass' (search for class) --project '~/funproject | php,inc' --line 2 --pos 12
- * phim project.search --words 'hello' (search for function)
- * phim project.search --words 'config/dev.php' (search for file)
- * phim jumpto --target '~/funproject/SuperClass.php(18)' (jump to a file and a certain line number)
- * phim debug --runner 'curl http://localhost' --file afile.php --line 10 --variable sum
- * phim project.index --projectdir '~/funproject | php,inc'
+ * Usage:
+ * 
  */
 require_once __DIR__.'/../vendor/autoload.php';
 

@@ -20,54 +20,13 @@ class Search extends BaseService
 
         $word = $this->getWordFromLineAndPosition($contextLine, $contextPosition);
 
-        $result = '';
-        if (strlen($word) > 0) {
-            $wordComps = explode("/", $word);
-            $wordPop = array_pop($wordComps);
-            $projectIndex = $project->getIndex();
-            //first search the class index
-            $classesIndex = $projectIndex['classes'];
-            if (isset($classesIndex[$wordPop])) {
-                //now fine tune the result, no need to show unrelated files
-                $fileInfos = $classesIndex[$wordPop];
-                $lineNum = 0;
-                foreach($fileInfos as $fileInfo) {
-                    if (strpos($fileInfo[0], $word) !== FALSE) {
-                        $lineNum ++;
-                        $result .= "$lineNum. {$fileInfo[0]}({$fileInfo[1]})\n";
-                    }
-                }
-                //if we did not find it, we search for the pure word
-                if ($lineNum === 0) {
-                    foreach($fileInfos as $fileInfo) {
-                        if (strpos($fileInfo[0], $wordPop) !== FALSE) {
-                            $lineNum ++;
-                            $result .= "$lineNum. {$fileInfo[0]}({$fileInfo[1]})\n";
-                        }
-                    }
-                }
-            }
-        }
+        $result = $project->searchWordInIndex($word);
 
         $resultLength = strlen(trim($result));
 
         if ($resultLength > 0) {
             echo $result;
             return;
-        }
-
-        //now there is no match on the classes, try to find the functions
-        //look to the left
-
-        $projectIndex = $project->getIndex();
-        $functionsIndex = $projectIndex['functions'];
-        if (isset($functionsIndex[$word])) {
-            $fileInfos = $functionsIndex[$word];
-            $lineNum = 0;
-            foreach($fileInfos as $fileInfo) {
-                $lineNum ++;
-                $result .= "$lineNum. {$fileInfo[0]}({$fileInfo[1]})\n";
-            }
         }
 
         echo $result;
