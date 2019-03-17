@@ -9,6 +9,8 @@ class Project {
     private static $instance;
     private $projectHash;
     private $projectIndexFile;
+    private $serializeHanlder;
+    private $unserializeHandler;
 
     public static function getInstance($projectHash) {
         if (!isset(self::$instance)) {
@@ -19,6 +21,8 @@ class Project {
 
     public function __construct($projectHash) {
         $this->projectHash = $projectHash;
+        $this->serializeHandler = Config::get('serialize_handler');
+        $this->unserializeHandler = Config::get('unserialize_handler');
     }
 
     public function getProjectHash() {
@@ -36,10 +40,10 @@ class Project {
             $wordComps = explode("/", $word);
             $wordPop = array_pop($wordComps);
             //first search the class index
-            $classIndex = $dataDir."/class.$wordPop.json";
+            $classIndex = $dataDir."/class.$wordPop.index";
             if (file_exists($classIndex)) {
                 //now fine tune the result, no need to show unrelated files
-                $fileInfos = json_decode(file_get_contents($classIndex));
+                $fileInfos = ($this->unserializeHandler)(file_get_contents($classIndex));
                 $lineNum = 0;
                 foreach($fileInfos as $fileInfo) {
                     if (strpos($fileInfo[0], $word) !== FALSE) {
@@ -60,9 +64,9 @@ class Project {
 
             if (strlen($result) === 0) {
                 //not exists in class index, search for function instead
-                $functionIndex = $dataDir."/function.$wordPop.json";
+                $functionIndex = $dataDir."/function.$wordPop.index";
                 if (file_exists($functionIndex)) {
-                    $fileInfos = json_decode(file_get_contents($functionIndex));
+                    $fileInfos = ($this->unserializeHandler)(file_get_contents($functionIndex));
                     $lineNum = 0;
                     foreach($fileInfos as $fileInfo) {
                         $lineNum ++;
@@ -78,21 +82,21 @@ class Project {
      * save the project index
      */
     public function saveIndex($indexData) {
-        //file_put_contents($this->projectIndexFile, json_encode($indexData));
         $dataDir = Config::get('dataRoot').'/'.$this->projectHash;
+        shell_exec("rm -rf $dataDir; mkdir $dataDir");
         $classIndexData = $indexData['classes'];
         foreach($indexData['classes'] as $class => $fileInfo) {
             if (@$class[0] !== '*') { //do not know why, there is a class starts with *, we should exclude it
-                $indexFileBasename = "class.$class.json";
+                $indexFileBasename = "class.$class.index";
                 $indexFile = $dataDir.'/'.$indexFileBasename;
-                file_put_contents($indexFile, json_encode($fileInfo));
+                file_put_contents($indexFile, ($this->serializeHandler)($fileInfo));
             }
         }
         $functionsIndexData = $indexData['functions'];
         foreach($indexData['functions'] as $function => $fileInfo) {
-            $indexFileBasename = "function.$function.json";
+            $indexFileBasename = "function.$function.index";
             $indexFile = $dataDir.'/'.$indexFileBasename;
-            file_put_contents($indexFile, json_encode($fileInfo));
+            file_put_contents($indexFile, ($this->serializeHandler)($fileInfo));
         }
     }
 }

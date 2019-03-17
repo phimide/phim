@@ -41,4 +41,7 @@ $config['commands'] = [
 
 $config['dataRoot'] = "/usr/local/phim/projects";
 
+$config['serialize_handler'] = 'serialize';
+$config['unserialize_handler'] = 'unserialize';
+
 return $config;
