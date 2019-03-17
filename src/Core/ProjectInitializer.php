@@ -4,12 +4,10 @@ namespace Core;
 class ProjectInitializer
 {
     public function init($info) {
-        $projectDetails = explode("|", $info);
-        $path = trim($projectDetails[0]);
-        $fileExtensionsStr = trim($projectDetails[1]);
-        $projectInfo = $path."|".$fileExtensionsStr;
-        $projectHash = md5($projectInfo);
-        $fileExtensions = explode(",", $fileExtensionsStr);
+        $projectInfo = ProjectInfoParser::parse($info);
+        $projectHash = $projectInfo['projectHash'];
+        $projectPath= $projectInfo['projectPath'];
+        $fileExtensions = $projectInfo['fileExtensions'];
         $dataRoot = Config::get('dataRoot');
         $dataDir = $dataRoot.'/'.$projectHash;
         system("mkdir -p {$dataDir}");
@@ -17,17 +15,15 @@ class ProjectInitializer
         $project = Project::getInstance($projectHash);
 
         //now create the project index
-        $this->createIndex($path, $fileExtensions, $project);
-
-        return $projectHash;
+        $this->createIndex($projectPath, $fileExtensions, $project);
     }
 
     /**
      * save the project index
      */
-    public function createIndex($path, $fileExtensions, $project) {
+    public function createIndex($projectpath, $fileExtensions, $project) {
         //find all php files
-        $cmd = "find $path -type f -name \"*.php\" -not -path \"*.git*\"";
+        $cmd = "find $projectpath -type f -name \"*.php\" -not -path \"*.git*\"";
         $output = shell_exec($cmd);
         $fileList = explode("\n", trim($output));
         $functionFinder = '/function[\s\n]+(\S+)[\s\n]*\(/';
@@ -36,8 +32,8 @@ class ProjectInitializer
             '/interface[\s\n]+(.*)[\s\n]*{/',
             '/trait[\s\n]+(.*)[\s\n]*{/'
         ];
-        $functionsHash = [];
-        $classesHash = [];
+
+        $project->clearIndexs();
         foreach($fileList as $file) {
             $content = file_get_contents($file);
             # Find all php functions
@@ -51,7 +47,8 @@ class ProjectInitializer
                     $lineNumber = strlen($before) - strlen(str_replace("\n", "", $before)) + 1;
                     //exclude constructor
                     if (!in_array($functionName, ['__construct'])) {
-                        $functionsHash[$functionName][] = [$file, $lineNumber];
+                        $indexContent = $file.':'.$lineNumber."\n";
+                        $project->saveSingleIndex('function',$functionName,$indexContent);
                     }
                 }
             }
@@ -65,17 +62,11 @@ class ProjectInitializer
                         $charPos = $match[1];
                         $className = explode(" ", $chunk)[0];
                         $lineNumber = count(explode("\n", substr($content, 0, $charPos)));
-                        $classesHash[$className][] = [$file, $lineNumber];
+                        $indexContent = $file.':'.$lineNumber."\n";
+                        $project->saveSingleIndex('class',$className,$indexContent);
                     }
                 }
             }
         }
-        $data = [
-            'functions' => $functionsHash,
-            'classes' => $classesHash
-        ];
-
-        $project->saveIndex($data);
     }
-
 }

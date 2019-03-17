@@ -8,9 +8,7 @@ namespace Core;
 class Project {
     private static $instance;
     private $projectHash;
-    private $projectIndexFile;
-    private $serializeHanlder;
-    private $unserializeHandler;
+    private $dataDir;
 
     public static function getInstance($projectHash) {
         if (!isset(self::$instance)) {
@@ -21,8 +19,7 @@ class Project {
 
     public function __construct($projectHash) {
         $this->projectHash = $projectHash;
-        $this->serializeHandler = Config::get('serialize_handler');
-        $this->unserializeHandler = Config::get('unserialize_handler');
+        $this->dataDir = Config::get('dataRoot').'/'.$this->projectHash;
     }
 
     public function getProjectHash() {
@@ -43,20 +40,26 @@ class Project {
             $classIndex = $dataDir."/class.$wordPop.index";
             if (file_exists($classIndex)) {
                 //now fine tune the result, no need to show unrelated files
-                $fileInfos = ($this->unserializeHandler)(file_get_contents($classIndex));
+                $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
                 $lineNum = 0;
                 foreach($fileInfos as $fileInfo) {
-                    if (strpos($fileInfo[0], $word) !== FALSE) {
+                    $comps = explode(":", $fileInfo);
+                    $filePath = $comps[0];
+                    $line = $comps[1];
+                    if (strpos($filePath, $word) !== FALSE) {
                         $lineNum ++;
-                        $result .= "$lineNum. {$fileInfo[0]}({$fileInfo[1]})\n";
+                        $result .= "$lineNum. {$filePath}({$line})\n";
                     }
                 }
                 //if we did not find it, we search for the pure word
                 if ($lineNum === 0) {
                     foreach($fileInfos as $fileInfo) {
-                        if (strpos($fileInfo[0], $wordPop) !== FALSE) {
+                        $comps = explode(":", $fileInfo);
+                        $filePath = $comps[0];
+                        $line = $comps[1];
+                        if (strpos($filePath, $wordPop) !== FALSE) {
                             $lineNum ++;
-                            $result .= "$lineNum. {$fileInfo[0]}({$fileInfo[1]})\n";
+                            $result .= "$lineNum. {$filePath}({$line})\n";
                         }
                     }
                 }
@@ -66,11 +69,14 @@ class Project {
                 //not exists in class index, search for function instead
                 $functionIndex = $dataDir."/function.$wordPop.index";
                 if (file_exists($functionIndex)) {
-                    $fileInfos = ($this->unserializeHandler)(file_get_contents($functionIndex));
+                    $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
                     $lineNum = 0;
                     foreach($fileInfos as $fileInfo) {
+                        $comps = explode(":", $fileInfo);
+                        $filePath = $comps[0];
+                        $line = $comps[1];
                         $lineNum ++;
-                        $result .= "$lineNum. {$fileInfo[0]}({$fileInfo[1]})\n";
+                        $result .= "$lineNum. {$filePath}({$line})\n";
                     }
                 }
             }
@@ -78,25 +84,17 @@ class Project {
         return $result;
     }
 
+    public function clearIndexs() {
+        shell_exec("rm -rf {$this->dataDir}; mkdir {$this->dataDir}");
+    }
+
     /**
-     * save the project index
+     * save a single index item
      */
-    public function saveIndex($indexData) {
-        $dataDir = Config::get('dataRoot').'/'.$this->projectHash;
-        shell_exec("rm -rf $dataDir; mkdir $dataDir");
-        $classIndexData = $indexData['classes'];
-        foreach($indexData['classes'] as $class => $fileInfo) {
-            if (@$class[0] !== '*') { //do not know why, there is a class starts with *, we should exclude it
-                $indexFileBasename = "class.$class.index";
-                $indexFile = $dataDir.'/'.$indexFileBasename;
-                file_put_contents($indexFile, ($this->serializeHandler)($fileInfo));
-            }
-        }
-        $functionsIndexData = $indexData['functions'];
-        foreach($indexData['functions'] as $function => $fileInfo) {
-            $indexFileBasename = "function.$function.index";
-            $indexFile = $dataDir.'/'.$indexFileBasename;
-            file_put_contents($indexFile, ($this->serializeHandler)($fileInfo));
+    public function saveSingleIndex($indexType, $indexName, $indexContent) {
+        if (@$indexName[0] !== '*') {
+            $indexFilePath = $this->dataDir.'/'.$indexType.'.'.$indexName.'.index';
+            file_put_contents($indexFilePath, $indexContent, \FILE_APPEND);
         }
     }
 }

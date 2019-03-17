@@ -2,12 +2,13 @@
 namespace Service;
 
 use Core\BaseService as BaseService;
-use Core\ProjectHash as ProjectHash;
+use Core\ProjectInfoParser as ProjectInfoParser;
 
 class GetHash extends BaseService
 {
     public function start() {
-        $result = ProjectHash::get($this->options['project']);
+        $projectInfo = ProjectInfoParser::parse($this->options['project']);
+        $result = $projectInfo['projectHash'];
         echo $result;
     }
 }

@@ -9,7 +9,6 @@ class Initialize extends BaseService
     public function start() {
         //we are going to initialize the project
         $projectInitializer = new ProjectInitializer();
-        $result = $projectInitializer->init($this->options['project']);
-        echo $result;
+        $projectInitializer->init($this->options['project']);
     }
 }

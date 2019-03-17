@@ -35,6 +35,7 @@ class Bootstrap
         }
         if ($requirementIsMet) {
             Config::set($this->config);
+            Options::set($options);
             $service = new $serviceClass($options, $this->config);
             $service->start();
         }
