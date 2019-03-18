@@ -6,17 +6,9 @@
 namespace Core;
 
 class Project {
-    private static $instance;
     private $projectHash;
     private $dataRoot;
     private $dataDir;
-
-    public static function getInstance($projectHash, $dataRoot) {
-        if (!isset(self::$instance)) {
-            self::$instance = new self($projectHash, $dataRoot);
-        }
-        return self::$instance;
-    }
 
     public function __construct($projectHash, $dataRoot) {
         $this->projectHash = $projectHash;
