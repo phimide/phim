@@ -86,7 +86,9 @@ class Project {
      * save a single index item
      */
     public function saveSingleIndex($indexType, $indexName, $indexContent) {
-        if (@$indexName[0] !== '*') {
+        if (strlen($indexName) > 0 &&
+            $indexName[0] !== '*'
+        )  {
             $indexFilePath = $this->dataDir.'/'.$indexType.'.'.$indexName.'.index';
             file_put_contents($indexFilePath, $indexContent, \FILE_APPEND);
         }
