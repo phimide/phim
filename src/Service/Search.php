@@ -28,8 +28,6 @@ class Search extends BaseService
             echo $result;
             return;
         }
-
-        echo $result;
     }
 
     private function getWordFromLineAndPosition($contextLine, $contextPosition) {
