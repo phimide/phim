@@ -3,16 +3,15 @@ namespace Core;
 
 class ProjectInitializer
 {
-    public function init($info) {
+    public function init($info, $dataRoot) {
         $projectInfo = ProjectInfoParser::parse($info);
         $projectHash = $projectInfo['projectHash'];
-        $projectPath= $projectInfo['projectPath'];
+        $projectPath = $projectInfo['projectPath'];
         $fileExtensions = $projectInfo['fileExtensions'];
-        $dataRoot = Config::get('dataRoot');
         $dataDir = $dataRoot.'/'.$projectHash;
         system("mkdir -p {$dataDir}");
 
-        $project = Project::getInstance($projectHash);
+        $project = new Project($projectHash, $dataRoot);
 
         //now create the project index
         $this->createIndex($projectPath, $fileExtensions, $project);

@@ -8,18 +8,20 @@ namespace Core;
 class Project {
     private static $instance;
     private $projectHash;
+    private $dataRoot;
     private $dataDir;
 
-    public static function getInstance($projectHash) {
+    public static function getInstance($projectHash, $dataRoot) {
         if (!isset(self::$instance)) {
-            self::$instance = new self($projectHash);
+            self::$instance = new self($projectHash, $dataRoot);
         }
         return self::$instance;
     }
 
-    public function __construct($projectHash) {
+    public function __construct($projectHash, $dataRoot) {
         $this->projectHash = $projectHash;
-        $this->dataDir = Config::get('dataRoot').'/'.$this->projectHash;
+        $this->dataRoot = $dataRoot;
+        $this->dataDir = $this->dataRoot.'/'.$this->projectHash;
     }
 
     public function getProjectHash() {
@@ -32,7 +34,7 @@ class Project {
 
     public function searchWordInIndex($word) {
         $result = "";
-        $dataDir = Config::get('dataRoot').'/'.$this->projectHash;
+        $dataDir = $this->dataRoot.'/'.$this->projectHash;
         if (strlen($word) > 0) {
             $wordComps = explode("/", $word);
             $wordPop = array_pop($wordComps);

@@ -8,7 +8,7 @@ use Core\Project as Project;
 class Search extends BaseService
 {
     public function start() {
-        $project = Project::getInstance($this->options['projecthash']);
+        $project = new Project($this->options['projecthash'], $this->config['dataRoot']);
 
         $file = $this->options['file'];
         $line = $this->options['line'];
