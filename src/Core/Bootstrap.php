@@ -7,15 +7,25 @@ class Bootstrap
     private $serviceName;
 
     public function __construct($config) {
+        $numOfArgs = count($GLOBALS['argv']);
         $this->config = $config;
         $this->cli = \Garden\Cli\Cli::create();
         $commands = $this->config['commands'];
-        foreach($commands as $command => $commandInfo) {
-            $this->cli->command($command);
-            $this->cli->description($commandInfo['description']);
+        if ($numOfArgs < 2) {
+            foreach($commands as $command => $commandInfo) {
+                $this->cli->command($command);
+                $this->cli->description($commandInfo['description']);
+                foreach($commandInfo['options'] as $optionValue => $optionDetails) {
+                    $this->cli->opt($optionValue, $optionDetails['description'], $optionDetails['require']);
+                }
+            }
+        } else {
+            $command = $GLOBALS['argv'][1];
+            $commandInfo = $commands[$command];
             foreach($commandInfo['options'] as $optionValue => $optionDetails) {
                 $this->cli->opt($optionValue, $optionDetails['description'], $optionDetails['require']);
             }
+            $this->cli->command($command);
         }
     }
 
