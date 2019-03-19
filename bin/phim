@@ -11,8 +11,6 @@ $loader->add("Core", __DIR__ . "/../src");
 $loader->add("Service", __DIR__ . "/../src");
 $loader->register();
 
-tideways_xhprof_enable();
 $config = require __DIR__.'/../config/config.php';
 $bootstrap = new Core\Bootstrap($config);
 $bootstrap->init();
-file_put_contents($config['profilePath']."/phim.xhprof", serialize(tideways_xhprof_disable()));

@@ -48,6 +48,5 @@ $commands['project.search'] = [
 
 $config['commands'] = $commands;
 $config['dataRoot'] = "/usr/local/phim/projects";
-$config['profilePath'] = "/usr/local/phim";
 
 return $config;
