@@ -25,7 +25,7 @@ class ProjectInitializer
         $cmd = "find $projectpath -type f -name \"*.php\" -not -path \"*.git*\"";
         $output = shell_exec($cmd);
         $fileList = explode("\n", trim($output));
-        $functionFinder = '/function[\s\n]+(\S+)[\s\n]*\(/';
+        $functionFinder = '/function[\s\n]+(.[a-zA-Z0-9_-]+)[\s\n]*\(/';
         $classFinders = [
             '/class[\s\n]+(.[a-zA-Z0-9_-]+)[a-zA-Z0-9,\s\n]*{/',
             '/interface[\s\n]+(.[a-zA-Z0-9_-]+)[a-zA-Z0-9,\s\n]*{/',
