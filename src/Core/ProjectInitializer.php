@@ -27,9 +27,9 @@ class ProjectInitializer
         $fileList = explode("\n", trim($output));
         $functionFinder = '/function[\s\n]+(\S+)[\s\n]*\(/';
         $classFinders = [
-            '/class[\s\n]+(.[a-zA-Z0-9]+)[a-zA-Z0-9,\s\n]*{/',
-            '/interface[\s\n]+(.[a-zA-Z0-9]+)[a-zA-Z0-9,\s\n]*{/',
-            '/trait[\s\n]+(.[a-zA-Z0-9]+)[a-zA-Z0-9,\s\n]*{/'
+            '/class[\s\n]+(.[a-zA-Z0-9_-]+)[a-zA-Z0-9,\s\n]*{/',
+            '/interface[\s\n]+(.[a-zA-Z0-9_-]+)[a-zA-Z0-9,\s\n]*{/',
+            '/trait[\s\n]+(.[a-zA-Z0-9_-]+)[a-zA-Z0-9,\s\n]*{/'
         ];
 
         $project->clearIndexs();
