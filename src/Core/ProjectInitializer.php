@@ -28,8 +28,8 @@ class ProjectInitializer
         $functionFinder = '/function[\s\n]+(\S+)[\s\n]*\(/';
         $classFinders = [
             '/class[\s\n]+(.[a-zA-Z0-9]+)[a-zA-Z0-9,\s\n]*{/',
-            '/interface[\s\n]+(.*)[\s\n]*{/',
-            '/trait[\s\n]+(.*)[\s\n]*{/'
+            '/interface[\s\n]+(.[a-zA-Z0-9]+)[a-zA-Z0-9,\s\n]*{/',
+            '/trait[\s\n]+(.[a-zA-Z0-9]+)[a-zA-Z0-9,\s\n]*{/'
         ];
 
         $project->clearIndexs();
@@ -60,8 +60,6 @@ class ProjectInitializer
                         $chunk = $match[0];
                         $charPos = $match[1];
                         $className = explode(" ", $chunk)[0];
-                        $className = str_replace(['{','=','|',"\n"],'', $className);
-                        $className = trim($className); 
                         if (strlen($className) > 0) {
                             $lineNumber = count(explode("\n", substr($content, 0, $charPos)));
                             $indexContent = $file.':'.$lineNumber."\n";
