@@ -52,8 +52,11 @@ class Project {
                     $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
                     foreach($fileInfos as $fileInfo) {
                         $file = explode(":", $fileInfo)[0];
-                        if (in_array($file, $classFiles) && strpos($file, $classPath) !== FALSE) {
-                            $possibleFileInfos[] = $fileInfo;
+                        if (in_array($file, $classFiles)) {
+                            if (strlen($classPath) === 0 || 
+                                (strlen($classPath) > 0 && strpos($file, $classPath) !== FALSE)) {
+                                $possibleFileInfos[] = $fileInfo;
+                            }
                         }
                     }
                 }
