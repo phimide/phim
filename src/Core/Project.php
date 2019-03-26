@@ -29,29 +29,83 @@ class Project {
         $dataDir = $this->dataRoot.'/'.$this->projectHash;
         if (strlen($word) > 0) {
             $wordComps = explode("/", $word);
-            $wordPop = array_pop($wordComps);
-            //first search the class index
-            $classIndex = $dataDir."/class.$wordPop.index";
-            if (file_exists($classIndex)) {
-                //now fine tune the result, no need to show unrelated files
-                $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
+            $wordPop = array_pop($wordComps); 
+            $wordPopComps = explode("::", $wordPop);
+
+            if (count($wordPopComps) > 1) {  //this means it's in "class::function format"
+                $classPath = implode("/", $wordComps);
+                $className = $wordPopComps[0];
+                $functionName = $wordPopComps[1];
+                //first, search the class index
+                $classIndex = $dataDir."/class.$className.index";
+                $classFiles = [];
+                if (file_exists($classIndex)) {
+                    $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
+                    foreach($fileInfos as $fileInfo) {
+                        $classFiles[] = explode(":", $fileInfo)[0];
+                    }
+                }
+                //second, search for function index
+                $functionIndex = $dataDir."/function.$functionName.index";
+                $possibleFileInfos = [];
+                if (file_exists($functionIndex)) {
+                    $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
+                    foreach($fileInfos as $fileInfo) {
+                        $file = explode(":", $fileInfo)[0];
+                        if (in_array($file, $classFiles) && strpos($file, $classPath) !== FALSE) {
+                            $possibleFileInfos[] = $fileInfo;
+                        }
+                    }
+                }
+
                 $lineNum = 0;
-                foreach($fileInfos as $fileInfo) {
+                foreach($possibleFileInfos as $fileInfo) {
+                    $lineNum ++;
                     $comps = explode(":", $fileInfo);
                     $filePath = $comps[0];
                     $line = $comps[1];
-                    if (strpos($filePath, $word) !== FALSE) {
-                        $lineNum ++;
-                        $result .= "$lineNum. {$filePath}({$line})\n";
-                    }
+                    $result .= "$lineNum. {$filePath}({$line})\n";
                 }
-                //if we did not find it, we search for the pure word
-                if ($lineNum === 0) {
+            } else { //this means it is just pure word
+                //first search the class index
+                $classIndex = $dataDir."/class.$wordPop.index";
+                if (file_exists($classIndex)) {
+                    //now fine tune the result, no need to show unrelated files
+                    $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
+                    $lineNum = 0;
                     foreach($fileInfos as $fileInfo) {
                         $comps = explode(":", $fileInfo);
                         $filePath = $comps[0];
                         $line = $comps[1];
-                        if (strpos($filePath, $wordPop) !== FALSE) {
+                        if (strpos($filePath, $word) !== FALSE) {
+                            $lineNum ++;
+                            $result .= "$lineNum. {$filePath}({$line})\n";
+                        }
+                    }
+                    //if we did not find it, we search for the pure word
+                    if ($lineNum === 0) {
+                        foreach($fileInfos as $fileInfo) {
+                            $comps = explode(":", $fileInfo);
+                            $filePath = $comps[0];
+                            $line = $comps[1];
+                            if (strpos($filePath, $wordPop) !== FALSE) {
+                                $lineNum ++;
+                                $result .= "$lineNum. {$filePath}({$line})\n";
+                            }
+                        }
+                    }
+                }
+
+                if (strlen($result) === 0) {
+                    //not exists in class index, search for function instead
+                    $functionIndex = $dataDir."/function.$wordPop.index";
+                    if (file_exists($functionIndex)) {
+                        $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
+                        $lineNum = 0;
+                        foreach($fileInfos as $fileInfo) {
+                            $comps = explode(":", $fileInfo);
+                            $filePath = $comps[0];
+                            $line = $comps[1];
                             $lineNum ++;
                             $result .= "$lineNum. {$filePath}({$line})\n";
                         }
@@ -59,21 +113,6 @@ class Project {
                 }
             }
 
-            if (strlen($result) === 0) {
-                //not exists in class index, search for function instead
-                $functionIndex = $dataDir."/function.$wordPop.index";
-                if (file_exists($functionIndex)) {
-                    $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
-                    $lineNum = 0;
-                    foreach($fileInfos as $fileInfo) {
-                        $comps = explode(":", $fileInfo);
-                        $filePath = $comps[0];
-                        $line = $comps[1];
-                        $lineNum ++;
-                        $result .= "$lineNum. {$filePath}({$line})\n";
-                    }
-                }
-            }
         }
         return $result;
     }
