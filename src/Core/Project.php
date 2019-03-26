@@ -57,6 +57,9 @@ class Project {
                                 (strlen($classPath) > 0 && strpos($file, $classPath) !== FALSE)) {
                                 $possibleFileInfos[] = $fileInfo;
                             }
+                        } else {
+                            //no commons found, just focus on the function
+                            $possibleFileInfos[] = $fileInfo;
                         }
                     }
                 }
