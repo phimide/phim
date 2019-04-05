@@ -32,10 +32,20 @@ class Project {
             $wordPop = array_pop($wordComps); 
             $wordPopComps = explode("::", $wordPop);
 
-            if (count($wordPopComps) > 1) {  //this means it's in "class::function format"
+            //see if it is really a function
+            $isRealFunction = false;
+            if (strpos($word, "(") !== FALSE) {
+                $isRealFunction = true;
+            } else {
+                //this is not a real function, we should focus on searching the class
+                $wordPop = $wordPopComps[0]; 
+            }
+
+            if (count($wordPopComps) > 1 && $isRealFunction) {  //this means it's in "class::function format"
                 $classPath = implode("/", $wordComps);
                 $className = $wordPopComps[0];
                 $functionName = $wordPopComps[1];
+
                 //first, search the class index
                 $classIndex = $dataDir."/class.$className.index";
                 $classFiles = [];
@@ -45,7 +55,7 @@ class Project {
                         $classFiles[] = explode(":", $fileInfo)[0];
                     }
                 }
-                //second, search for function index
+                //second, search for function index, only when it is a real function
                 $functionIndex = $dataDir."/function.$functionName.index";
                 $possibleFileInfos = [];
                 if (file_exists($functionIndex)) {
