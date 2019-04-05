@@ -4,13 +4,4 @@
  * Usage:
  * 
  */
-require_once __DIR__.'/../vendor/autoload.php';
-
-$loader = new Composer\Autoload\ClassLoader();
-$loader->add("Core", __DIR__ . "/../src");
-$loader->add("Service", __DIR__ . "/../src");
-$loader->register();
-
-$config = require __DIR__.'/../config/config.php';
-$bootstrap = new Core\Bootstrap($config);
-$bootstrap->init();
+require_once __DIR__.'/phim.php';
