@@ -23,7 +23,11 @@ class Bootstrap
             }
         } else {
             $command = $GLOBALS['argv'][1];
+            $commandDir = $GLOBALS['rootDir']."/../src/Commands/$command";
+            $commandConfigFile = "$commandDir/config.php";
             $commandInfo = require_once($commandConfigFile);
+            $GLOBALS['loader']->add("Service", "$commandDir"); //lazy loading 
+            $GLOBALS['loader']->register();
             $this->commandInfo = $commandInfo;
             foreach($commandInfo['options'] as $optionValue => $optionDetails) {
                 $this->cli->opt($optionValue, $optionDetails['description'], $optionDetails['require']);
@@ -44,17 +48,13 @@ class Bootstrap
         $options = $args->getOpts();
         $requirementIsMet = true;
         foreach($options as $key => $val) {
-            if ($this->config['commands'][$command]['options'][$key]['require'] && strlen($val) === 0) {
+            if ($this->commandInfo['options'][$key]['require'] && strlen($val) === 0) {
                 print "Please provide value for $key (--$key)\n";
                 $requirementIsMet = false;
                 break;
             }
         }
         if ($requirementIsMet) {
-            $commandDir = $GLOBALS['rootDir']."/../src/Commands/$command";
-            $commandConfigFile = "$commandDir/config.php";
-            $GLOBALS['loader']->add("Service", "$commandDir/Service"); //lazy loading 
-            $GLOBALS['loader']->register();
             $service = new $serviceClass($options, $this->config);
             $service->start();
         }

@@ -1,5 +1,6 @@
 <?php
 return [
+    'service' => 'GetHash',
     'description' => 'Get the project hash',
     'options' => [
         'project' => [
@@ -7,5 +8,4 @@ return [
             'require' => true
         ],
     ],
-    'service' => 'GetHash',
 ];
