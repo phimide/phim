@@ -28,6 +28,53 @@ class Project {
         $result = "";
         $dataDir = $this->dataRoot.'/'.$this->projectHash;
         if (strlen($word) > 0) {
+            $searchPatterns = [];
+            $wordCompsByTwoColons =  explode("::", $word);
+            $searchPatterns[] = $wordCompsByTwoColons[0];
+            $indexName = array_pop(explode("/", $wordCompsByTwoColons[0]));
+            $searchPatterns[] = $indexName;
+
+            $isClassFunctionCall = false; //is this like Class::Function()
+            $isClassMemberCall = false; //is this like Class::Member
+            $isPureFunctionCall = false; //is this like Function()
+            if (count($wordCompsByTwoColons) > 1) {
+                if (strpos($wordCompsByTwoColons[1], "(") !== FALSE) {
+                    $isClassFunctionCall = true;
+                } else {
+                    $isClassMemberCall = true;
+                }
+            } else if (strpos($wordCompsByTwoColons[0], "(") !== FALSE) {
+                $isPureFunctionCall = true;
+            }
+
+            foreach($searchPatterns as $searchPattern) {
+                if ($isClassFunctionCall || $isClassMemberCall) {
+                    //first, search the class index
+                    $classIndex = $dataDir."/class.$indexName.index";
+                    $classFiles = [];
+                    $classFilesBySimilarity = [];
+                    if (file_exists($classIndex)) {
+                        $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
+                        foreach($fileInfos as $fileInfo) {
+                            $file = explode(":", $fileInfo)[0];
+                            $similarity = \similar_text($file, $searchPattern);
+                            $classFilesBySimilarity[$similarity] = $file;
+                        }
+                        if (count($classFilesBySimilarity) > 0) {
+                            krsort($classFilesBySimilarity);
+                            $classFiles = array_values($classFilesBySimilarity);
+                        }
+                    }
+
+                    //see if this is a class function call
+                    if ($isClassFunctionCall) {
+                        //search for the function
+                        
+                    }
+                } else if ($isPureFunctionCall) {
+                }           
+            }
+
             $wordComps = explode("/", $word);
             $wordPop = array_pop($wordComps); 
             $wordPopComps = explode("::", $wordPop);
@@ -41,7 +88,8 @@ class Project {
                 $wordPop = $wordPopComps[0]; 
             }
 
-            if (count($wordPopComps) > 1 && $isRealFunction) {  //this means it's in "class::function format"
+            $wordPopCompsCount = count($wordPopComps);
+            if ($wordPopCompsCount > 1 && $isRealFunction) {  //this means it's in "class::function format"
                 $classPath = implode("/", $wordComps);
                 $className = $wordPopComps[0];
                 $functionName = $wordPopComps[1];
@@ -85,6 +133,12 @@ class Project {
             } else { //this means it is just pure word
                 //first search the class index
                 $classIndex = $dataDir."/class.$wordPop.index";
+
+                //speical case, if it is class::expression, extract the class
+                if ($wordPopCompsCount > 1) {
+                    $word = $wordPopComps[0];
+                }
+
                 if (file_exists($classIndex)) {
                     //now fine tune the result, no need to show unrelated files
                     $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
