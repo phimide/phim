@@ -25,166 +25,75 @@ class Project {
     }
 
     public function searchWordInIndex($word) {
-        $result = "";
         $dataDir = $this->dataRoot.'/'.$this->projectHash;
         if (strlen($word) > 0) {
             $searchPatterns = [];
             $wordCompsByTwoColons =  explode("::", $word);
-            $searchPatterns[] = $wordCompsByTwoColons[0];
-            $indexName = array_pop(explode("/", $wordCompsByTwoColons[0]));
-            $searchPatterns[] = $indexName;
 
-            $isClassFunctionCall = false; //is this like Class::Function()
-            $isClassMemberCall = false; //is this like Class::Member
-            $isPureFunctionCall = false; //is this like Function()
-            if (count($wordCompsByTwoColons) > 1) {
-                if (strpos($wordCompsByTwoColons[1], "(") !== FALSE) {
-                    $isClassFunctionCall = true;
-                } else {
-                    $isClassMemberCall = true;
-                }
-            } else if (strpos($wordCompsByTwoColons[0], "(") !== FALSE) {
-                $isPureFunctionCall = true;
-            }
+            $className = "";
+            $functionName = "";
 
-            foreach($searchPatterns as $searchPattern) {
-                if ($isClassFunctionCall || $isClassMemberCall) {
-                    //first, search the class index
-                    $classIndex = $dataDir."/class.$indexName.index";
-                    $classFiles = [];
-                    $classFilesBySimilarity = [];
-                    if (file_exists($classIndex)) {
-                        $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
-                        foreach($fileInfos as $fileInfo) {
-                            $file = explode(":", $fileInfo)[0];
-                            $similarity = \similar_text($file, $searchPattern);
-                            $classFilesBySimilarity[$similarity] = $file;
-                        }
-                        if (count($classFilesBySimilarity) > 0) {
-                            krsort($classFilesBySimilarity);
-                            $classFiles = array_values($classFilesBySimilarity);
-                        }
-                    }
-
-                    //see if this is a class function call
-                    if ($isClassFunctionCall) {
-                        //search for the function
-                        
-                    }
-                } else if ($isPureFunctionCall) {
-                }           
-            }
-
-            $wordComps = explode("/", $word);
-            $wordPop = array_pop($wordComps); 
-            $wordPopComps = explode("::", $wordPop);
-
-            //see if it is really a function
-            $isRealFunction = false;
-            if (strpos($word, "(") !== FALSE) {
-                $isRealFunction = true;
+            if (count($wordCompsByTwoColons) > 1) { //this is like class::member
+                $className = array_pop(explode("/", $wordCompsByTwoColons[0]));
+                $functionName = $wordCompsByTwoColons[1];
+                $searchPatterns[] = $className;
             } else {
-                //this is not a real function, we should focus on searching the class
-                $wordPop = $wordPopComps[0]; 
+                $functionName = array_pop(explode("/", $wordCompsByTwoColons[0]));
             }
 
-            $wordPopCompsCount = count($wordPopComps);
-            if ($wordPopCompsCount > 1 && $isRealFunction) {  //this means it's in "class::function format"
-                $classPath = implode("/", $wordComps);
-                $className = $wordPopComps[0];
-                $functionName = $wordPopComps[1];
-
-                //first, search the class index
+            $possibleFileInfos = [];
+            if (strlen($className) > 0) {
+                //search the class index
                 $classIndex = $dataDir."/class.$className.index";
+                $classPath = $wordCompsByTwoColons[0];
                 $classFiles = [];
+                $classFilesBySimilarity = [];
                 if (file_exists($classIndex)) {
                     $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
-                    foreach($fileInfos as $fileInfo) {
-                        $classFiles[] = explode(":", $fileInfo)[0];
-                    }
-                }
-                //second, search for function index, only when it is a real function
-                $functionIndex = $dataDir."/function.$functionName.index";
-                $possibleFileInfos = [];
-                if (file_exists($functionIndex)) {
-                    $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
+                    $possibleFileInfos = $fileInfos;
                     foreach($fileInfos as $fileInfo) {
                         $file = explode(":", $fileInfo)[0];
-                        if (in_array($file, $classFiles)) {
-                            if (strlen($classPath) === 0 || 
-                                (strlen($classPath) > 0 && strpos($file, $classPath) !== FALSE)) {
-                                $possibleFileInfos[] = $fileInfo;
-                            }
-                        } else {
-                            //no commons found, just focus on the function
-                            $possibleFileInfos[] = $fileInfo;
-                        }
+                        $classFiles[] = $file;
+                        $similarity = \similar_text($file, $classPath);
+                        $fileInfosBySimilarity[$similarity] = $fileInfo;
                     }
-                }
-
-                $lineNum = 0;
-                foreach($possibleFileInfos as $fileInfo) {
-                    $lineNum ++;
-                    $comps = explode(":", $fileInfo);
-                    $filePath = $comps[0];
-                    $line = $comps[1];
-                    $result .= "$lineNum. {$filePath}({$line})\n";
-                }
-            } else { //this means it is just pure word
-                //first search the class index
-                $classIndex = $dataDir."/class.$wordPop.index";
-
-                //speical case, if it is class::expression, extract the class
-                if ($wordPopCompsCount > 1) {
-                    $word = $wordPopComps[0];
-                }
-
-                if (file_exists($classIndex)) {
-                    //now fine tune the result, no need to show unrelated files
-                    $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
-                    $lineNum = 0;
-                    foreach($fileInfos as $fileInfo) {
-                        $comps = explode(":", $fileInfo);
-                        $filePath = $comps[0];
-                        $line = $comps[1];
-                        if (strpos($filePath, $word) !== FALSE) {
-                            $lineNum ++;
-                            $result .= "$lineNum. {$filePath}({$line})\n";
-                        }
-                    }
-                    //if we did not find it, we search for the pure word
-                    if ($lineNum === 0) {
-                        foreach($fileInfos as $fileInfo) {
-                            $comps = explode(":", $fileInfo);
-                            $filePath = $comps[0];
-                            $line = $comps[1];
-                            if (strpos($filePath, $wordPop) !== FALSE) {
-                                $lineNum ++;
-                                $result .= "$lineNum. {$filePath}({$line})\n";
-                            }
-                        }
-                    }
-                }
-
-                if (strlen($result) === 0) {
-                    //not exists in class index, search for function instead
-                    $functionIndex = $dataDir."/function.$wordPop.index";
-                    if (file_exists($functionIndex)) {
-                        $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
-                        $lineNum = 0;
-                        foreach($fileInfos as $fileInfo) {
-                            $comps = explode(":", $fileInfo);
-                            $filePath = $comps[0];
-                            $line = $comps[1];
-                            $lineNum ++;
-                            $result .= "$lineNum. {$filePath}({$line})\n";
-                        }
+                    if (count($fileInfosBySimilarity) > 0) {
+                        krsort($fileInfosBySimilarity);
+                        $possibleFileInfos = array_values($fileInfosBySimilarity);
                     }
                 }
             }
 
+            if (strlen($functionName) > 0) {
+                $functionIndex = $dataDir."/function.$functionName.index";
+                $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
+                if (strlen($className) > 0) { //we search for class::member
+                    $commonFileInfos = [];
+                    if (file_exists($functionIndex)) {
+                        foreach($fileInfos as $fileInfo) {
+                            $file = explode(":", $fileInfo)[0];
+                            if (in_array($file, $classFiles)) {
+                                $commonFileInfos[] = $fileInfo;
+                            } 
+                        }
+                    }
+                    if (count($commonFileInfos) > 0) {
+                        $possibleFileInfos = $commonFileInfos;
+                    }
+                }
+            }
         }
-        return $result;
+
+        //construct the result
+        $result = "";
+        $lineNum = 0;
+        foreach($possibleFileInfos as $fileInfo) {
+            $lineNum ++;
+            $comps = explode(":", $fileInfo);
+            $filePath = $comps[0];
+            $line = $comps[1];
+            $result .= "$lineNum. {$filePath}({$line})\n";
+        }
     }
 
     public function clearIndexs() {
