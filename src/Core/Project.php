@@ -33,12 +33,14 @@ class Project {
             $className = "";
             $functionName = "";
 
+            $wordCompsByForwardSlashes = explode("/", $wordCompsByTwoColons[0]);
             if (count($wordCompsByTwoColons) > 1) { //this is like class::member
-                $className = array_pop(explode("/", $wordCompsByTwoColons[0]));
+                $className = array_pop($wordCompsByForwardSlashes);
                 $functionName = $wordCompsByTwoColons[1];
                 $searchPatterns[] = $className;
             } else {
-                $functionName = array_pop(explode("/", $wordCompsByTwoColons[0]));
+                //this is possibly be a class
+                $className = array_pop($wordCompsByForwardSlashes);
             }
 
             $possibleFileInfos = [];
