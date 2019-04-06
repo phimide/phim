@@ -94,6 +94,8 @@ class Project {
             $line = $comps[1];
             $result .= "$lineNum. {$filePath}({$line})\n";
         }
+
+        return $result;
     }
 
     public function clearIndexs() {
