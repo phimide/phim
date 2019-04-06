@@ -37,7 +37,14 @@ class Bootstrap
     }
 
     public function loadAllCommands() {
-        $this->config;
+        $commands = [];
+        $commandDir = $GLOBALS['rootDir']."/../src/Commands";
+        $entries = explode("\n", trim(shell_exec("find $commandDir -type d -name 'project.*'")));
+        foreach($entries as $entry) {
+            $key = str_replace("$commandDir/", "", $entry);
+            $commands[$key] = require_once("$entry/config.php");
+        }
+        return $commands;
     }
 
     public function init() {
