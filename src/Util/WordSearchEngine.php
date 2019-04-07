@@ -16,8 +16,9 @@ class WordSearchEngine
     public function doSearch($file, $contextLine, $contextPosition) {
         $possibleFileInfos = [];
 
-        $word = $this->getWordFromLineAndPosition($contextLine, $contextPosition); 
+        $wordInfo = $this->getWordFromLineAndPosition($contextLine, $contextPosition); 
 
+        $word = $wordInfo['word'];
         $wordSplits = explode("::", $word);
         $wordSplitsCount = count($wordSplits);
         if ($wordSplitsCount === 2) { 
@@ -106,7 +107,12 @@ class WordSearchEngine
         //also, replace \ to /
         $word = str_replace("\\", "/", $word);
 
-        return $word;
+        $result = [
+            'word' => $word,
+            'leftPos' => $wordLeftPos,
+            'rightPos' => $wordRightPos,
+        ];
+        return $result;
     }
 
     private function getResultFromFileInfos($possibleFileInfos) {
