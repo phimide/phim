@@ -13,7 +13,7 @@ class ProjectInitializer
 
         $project = new Project($projectHash, $dataRoot);
 
-        //now create the project index
+        //create the project index
         $this->createIndex($projectPath, $fileExtensions, $project);
     }
 
