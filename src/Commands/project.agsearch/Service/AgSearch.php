@@ -16,13 +16,15 @@ class AgSearch extends BaseService
         $result = "";
         $lineNumber = 0;
         foreach($lines as $line) {
-            $lineNumber ++;
-            $lineSplits = explode(":", $line);
-            $file = array_shift($lineSplits);
-            $lineLocation = array_shift($lineSplits);
-            $matchInfo = implode(":", $lineSplits);
-            $line  = $projectPath."/".$file."(".$lineLocation.") ".$matchInfo;
-            $result .= $lineNumber . ". " .$line."\n";
+            if (strlen($line) > 0) {
+                $lineNumber ++;
+                $lineSplits = explode(":", $line);
+                $file = array_shift($lineSplits);
+                $lineLocation = array_shift($lineSplits);
+                $matchInfo = implode(":", $lineSplits);
+                $line  = $projectPath."/".$file."(".$lineLocation.") ".$matchInfo;
+                $result .= $lineNumber . ". " .$line."\n";
+            }
         }
 
         $result = trim($result);
