@@ -16,14 +16,14 @@ class WordSearchEngine
     public function doSearch($file, $contextLine, $contextPosition) {
         $possibleFileInfos = [];
 
-        $wordInfo = $this->getWordFromLineAndPosition($contextLine, $contextPosition); 
+        $wordInfo = $this->getWordFromLineAndPosition($contextLine, $contextPosition);
 
         $word = $wordInfo['word'];
         $wordSplits = explode("::", $word);
         $wordSplitsCount = count($wordSplits);
-        if ($wordSplitsCount === 2) { 
+        if ($wordSplitsCount === 2) {
             //pattern: class::member
-            $classPath = $wordSplits[0]; 
+            $classPath = $wordSplits[0];
             $classPathSplits = explode("/", $classPath);
             $className = array_pop($classPathSplits);
             $classIndex = $this->dataDir."/class.$className.index";
@@ -45,12 +45,12 @@ class WordSearchEngine
                     $file = explode(":", $fileInfo)[0];
                     if (isset($possibleFileInfos[$file])) {
                         $possibleFileInfos[$file] = $fileInfo;
-                    } 
+                    }
                 }
             }
-        } else if ($wordSplitsCount === 1) { 
+        } else if ($wordSplitsCount === 1) {
             //pattern: class|trait|function
-            $classPath = $wordSplits[0]; 
+            $classPath = $wordSplits[0];
             $classPathSplits = explode("/", $classPath);
             $className = array_pop($classPathSplits);
             $classIndex = $this->dataDir."/class.$className.index";
@@ -77,8 +77,8 @@ class WordSearchEngine
     }
 
     private function getWordFromLineAndPosition($contextLine, $contextPosition) {
-        $leftStoppingSymbolsHash = [',' => 1, ';' => 1,' ' => 1,'[' => 1,'\'' => 1,'+' => 1,'(' => 1];
-        $rightStoppingSymbolsHash = [' ' => 1,';' => 1,',' => 1,'{' => 1,']' => 1, '\'' => 1, ')' => 1];
+        $leftStoppingSymbolsHash = [',' => 1, ';' => 1,' ' => 1,'[' => 1,'\'' => 1,'+' => 1,')' => 1, '(' => 1];
+        $rightStoppingSymbolsHash = [' ' => 1,';' => 1,',' => 1,'{' => 1,']' => 1, '\'' => 1, ')' => 1, '(' => 1];
 
         //look to the left
         $wordLeftPos = $contextPosition;
