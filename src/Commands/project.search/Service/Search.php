@@ -20,12 +20,12 @@ class Search extends BaseService
 
         $searchEngine = new WordSearchEngine($this->options['projecthash'], $this->config['dataRoot']);
         $result = $searchEngine->doSearch($file, $contextLine, $contextPosition);
-        
+
         $resultLength = strlen(trim($result));
 
         if ($resultLength > 0) {
             echo $result;
             return;
         }
-    } 
+    }
 }
