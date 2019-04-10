@@ -29,10 +29,16 @@ class WordSearchEngine
             $classIndex = $this->dataDir."/class.$className.index";
             if (file_exists($classIndex)) {
                 $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
-                foreach($fileInfos as $fileInfo) {
-                    $file = explode(":", $fileInfo)[0];
-                    if (strpos($file, $classPath) !== FALSE) {
-                        $possibleFileInfos[$file] = $fileInfo;
+                $patterns = [$classPath, $className];
+                foreach($patterns as $pattern) {
+                    foreach($fileInfos as $fileInfo) {
+                        $file = explode(":", $fileInfo)[0];
+                        if (strpos($file, $pattern) !== FALSE) {
+                            $possibleFileInfos[$file] = $fileInfo;
+                        }
+                    }
+                    if (count($possibleFileInfos) > 0) {
+                        break;
                     }
                 }
             }
@@ -60,7 +66,7 @@ class WordSearchEngine
                 foreach($patterns as $pattern) {
                     foreach($fileInfos as $fileInfo) {
                         $file = explode(":", $fileInfo)[0];
-                        if (strpos($file, $classPath) !== FALSE) {
+                        if (strpos($file, $pattern) !== FALSE) {
                             $possibleFileInfos[$file] = $fileInfo;
                         }
                     }
