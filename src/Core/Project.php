@@ -76,7 +76,7 @@ class Project {
                             $file = explode(":", $fileInfo)[0];
                             if (in_array($file, $classFiles)) {
                                 $commonFileInfos[] = $fileInfo;
-                            } 
+                            }
                         }
                     }
                     if (count($commonFileInfos) > 0) {
@@ -101,7 +101,7 @@ class Project {
     }
 
     public function clearIndexs() {
-        shell_exec("rm -rf {$this->dataDir}; mkdir {$this->dataDir}");
+        shell_exec("cd {$this->dataDir}; rm -f class.*.index; rm -f function.*.index");
     }
 
     /**
