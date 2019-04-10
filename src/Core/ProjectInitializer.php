@@ -9,11 +9,11 @@ class ProjectInitializer
         $projectPath = $projectInfo['projectPath'];
         $fileExtensions = $projectInfo['fileExtensions'];
         $dataDir = $dataRoot.'/'.$projectHash;
-        system("rm -rf {$dataDir}; mkdir {$dataDir}");
+        system("mkdir -p {$dataDir}");
 
         $project = new Project($projectHash, $dataRoot);
 
-        //now create the project index
+        //create the project index
         $this->createIndex($projectPath, $fileExtensions, $project);
     }
 

@@ -5,6 +5,7 @@ require_once $rootDir.'/../vendor/autoload.php';
 
 $loader = new Composer\Autoload\ClassLoader();
 $loader->add("Core", $rootDir. "/../src");
+$loader->add("Util", $rootDir. "/../src");
 $loader->register();
 
 $config = require $rootDir.'/../config/config.php';
