@@ -75,6 +75,19 @@ class WordSearchEngine
                     }
                 }
             }
+
+            if (count($possibleFileInfos) === 0) {
+                //no class|trait|interface is matched, try to find in function index
+                $functionName = $className;
+                $functionIndex = $this->dataDir."/function.$functionName.index";
+                if (file_exists($functionIndex)) {
+                    $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
+                    foreach($fileInfos as $fileInfo) {
+                        $file = explode(":", $fileInfo)[0];
+                        $possibleFileInfos[$file] = $fileInfo;
+                    }
+                }
+            }
         }
 
         $result = $this->getResultFromFileInfos($possibleFileInfos);
@@ -83,7 +96,7 @@ class WordSearchEngine
     }
 
     private function getWordFromLineAndPosition($contextLine, $contextPosition) {
-        $leftStoppingSymbolsHash = [',' => 1, ';' => 1,' ' => 1,'[' => 1,'\'' => 1,'+' => 1,')' => 1, '(' => 1];
+        $leftStoppingSymbolsHash = [',' => 1, ';' => 1,' ' => 1,'[' => 1,'\'' => 1,'+' => 1,')' => 1, '(' => 1,'>' => 1];
         $rightStoppingSymbolsHash = [' ' => 1,';' => 1,',' => 1,'{' => 1,']' => 1, '\'' => 1, ')' => 1, '(' => 1];
 
         //look to the left
