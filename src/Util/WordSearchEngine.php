@@ -29,10 +29,16 @@ class WordSearchEngine
             $classIndex = $this->dataDir."/class.$className.index";
             if (file_exists($classIndex)) {
                 $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
-                foreach($fileInfos as $fileInfo) {
-                    $file = explode(":", $fileInfo)[0];
-                    if (strpos($file, $classPath) !== FALSE) {
-                        $possibleFileInfos[$file] = $fileInfo;
+                $patterns = [$classPath, $className];
+                foreach($patterns as $pattern) {
+                    foreach($fileInfos as $fileInfo) {
+                        $file = explode(":", $fileInfo)[0];
+                        if (strpos($file, $pattern) !== FALSE) {
+                            $possibleFileInfos[$file] = $fileInfo;
+                        }
+                    }
+                    if (count($possibleFileInfos) > 0) {
+                        break;
                     }
                 }
             }
@@ -60,12 +66,25 @@ class WordSearchEngine
                 foreach($patterns as $pattern) {
                     foreach($fileInfos as $fileInfo) {
                         $file = explode(":", $fileInfo)[0];
-                        if (strpos($file, $classPath) !== FALSE) {
+                        if (strpos($file, $pattern) !== FALSE) {
                             $possibleFileInfos[$file] = $fileInfo;
                         }
                     }
                     if (count($possibleFileInfos) > 0) {
                         break;
+                    }
+                }
+            }
+
+            if (count($possibleFileInfos) === 0) {
+                //no class|trait|interface is matched, try to find in function index
+                $functionName = $className;
+                $functionIndex = $this->dataDir."/function.$functionName.index";
+                if (file_exists($functionIndex)) {
+                    $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
+                    foreach($fileInfos as $fileInfo) {
+                        $file = explode(":", $fileInfo)[0];
+                        $possibleFileInfos[$file] = $fileInfo;
                     }
                 }
             }
@@ -77,7 +96,7 @@ class WordSearchEngine
     }
 
     private function getWordFromLineAndPosition($contextLine, $contextPosition) {
-        $leftStoppingSymbolsHash = [',' => 1, ';' => 1,' ' => 1,'[' => 1,'\'' => 1,'+' => 1,')' => 1, '(' => 1];
+        $leftStoppingSymbolsHash = [',' => 1, ';' => 1,' ' => 1,'[' => 1,'\'' => 1,'+' => 1,')' => 1, '(' => 1,'>' => 1];
         $rightStoppingSymbolsHash = [' ' => 1,';' => 1,',' => 1,'{' => 1,']' => 1, '\'' => 1, ')' => 1, '(' => 1];
 
         //look to the left
