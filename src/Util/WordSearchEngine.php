@@ -123,6 +123,9 @@ class WordSearchEngine
         $wordRightPart = substr($contextLine, $contextPosition, $wordRightPos - $contextPosition + 1);
         $word = $wordLeftPart.$wordRightPart;
 
+        //sometimes windows will leave a ^M character, we need to remove it
+        $word = str_ireplace("\x0D", "", $word);
+
         //also, replace \ to /
         $word = str_replace("\\", "/", $word);
 
