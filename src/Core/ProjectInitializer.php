@@ -20,9 +20,9 @@ class ProjectInitializer
     /**
      * save the project index
      */
-    public function createIndex($projectpath, $fileExtensions, $project) {
+    public function createIndex($projectPath, $fileExtensions, $project) {
         //find all php files
-        $cmd = "find $projectpath -type f -name \"*.php\" -not -path \"*.git*\"";
+        $cmd = "find $projectPath -type f -name \"*.php\" -not -path \"*.git*\"";
         $output = shell_exec($cmd);
         $fileList = explode("\n", trim($output));
         $functionFinder = '/function[\s\n]+(.[a-zA-Z0-9_\-]+)[\s\n]*\(/';
