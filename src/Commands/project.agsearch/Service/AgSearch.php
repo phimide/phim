@@ -8,12 +8,30 @@ class AgSearch extends BaseService
 {
     public function start() {
         $projectInfo = ProjectInfoParser::parse($this->options['project']);
-        $projectPath = trim(shell_exec('cd '.$projectInfo['projectPath'].'; pwd'));
-        $cmd = "ag \"{$this->options['word']}\" --skip-vcs-ignores --php";
+        $word = $this->options['word'];
+
+        $result = "";
+
+        $this->search(
+            $word,
+            $projectInfo['projectPath'],
+            function($projectRealPath, $lineNumber, $file, $lineLocation, $matchInfo) use (&$result) {
+                $line  = $projectRealPath."/".$file."(".$lineLocation.") ".$matchInfo;
+                $result .= $lineNumber . ". " .$line."\n";
+            }
+        );
+
+        $result = trim($result);
+
+        echo $result;
+    }
+
+    public function search($word, $projectPath, $callback) {
+        $projectRealPath = trim(shell_exec('cd '.$projectPath.'; pwd'));
+        $cmd = "ag \"$word\" --skip-vcs-ignores --php";
         $output = trim(shell_exec($cmd));
         $lines = explode("\n", $output);
 
-        $result = "";
         $lineNumber = 0;
         foreach($lines as $line) {
             if (strlen($line) > 0) {
@@ -22,13 +40,8 @@ class AgSearch extends BaseService
                 $file = array_shift($lineSplits);
                 $lineLocation = array_shift($lineSplits);
                 $matchInfo = implode(":", $lineSplits);
-                $line  = $projectPath."/".$file."(".$lineLocation.") ".$matchInfo;
-                $result .= $lineNumber . ". " .$line."\n";
+                $callback($projectRealPath, $lineNumber, $file, $lineLocation, $matchInfo);
             }
         }
-
-        $result = trim($result);
-
-        echo $result;
     }
 }
