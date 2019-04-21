@@ -101,7 +101,8 @@ class Project {
     }
 
     public function clearIndexs() {
-        shell_exec("cd {$this->dataDir}; rm -f class.*.index; rm -f function.*.index");
+        $cmd = "find {$this->dataDir} -type f -name \"*.index\" -delete";
+        shell_exec($cmd);
     }
 
     /**
