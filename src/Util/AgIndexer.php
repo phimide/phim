@@ -46,8 +46,6 @@ class AgIndexer
                 $this->saveSingleIndex('class', $className, $matchContent);
             }
         }
-
-        $result = "done";
     }
 
     public function clearIndexs() {
