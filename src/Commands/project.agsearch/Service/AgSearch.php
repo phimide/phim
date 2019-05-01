@@ -9,8 +9,8 @@ class AgSearch extends BaseService
     public function start() {
         $projectInfo = ProjectInfoParser::parse($this->options['project']);
         $projectPath = trim(shell_exec('cd '.$projectInfo['projectPath'].'; pwd'));
-        $cmd = "ag \"{$this->options['word']}\" --skip-vcs-ignores --php";
-        $output = trim(shell_exec($cmd));
+        $cmd = "ag \"{$this->options['word']}\" --skip-vcs-ignores";
+        $oktput = trim(shell_exec($cmd));
         $lines = explode("\n", $output);
 
         $result = "";
