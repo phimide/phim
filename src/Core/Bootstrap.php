@@ -26,7 +26,7 @@ class Bootstrap
             $commandDir = $GLOBALS['rootDir']."/../src/Commands/$command";
             $commandConfigFile = "$commandDir/config.php";
             $commandInfo = require_once($commandConfigFile);
-            $GLOBALS['loader']->add("Service", "$commandDir"); //lazy loading 
+            $GLOBALS['loader']->add("Service", "$commandDir"); //lazy loading
             $GLOBALS['loader']->register();
             $this->commandInfo = $commandInfo;
             foreach($commandInfo['options'] as $optionValue => $optionDetails) {
@@ -39,7 +39,7 @@ class Bootstrap
     public function loadAllCommands() {
         $commands = [];
         $commandDir = $GLOBALS['rootDir']."/../src/Commands";
-        $entries = explode("\n", trim(shell_exec("find $commandDir -type d -name 'project.*'")));
+        $entries = explode("\n", trim(shell_exec("find $commandDir -type d -depth 1")));
         foreach($entries as $entry) {
             $key = str_replace("$commandDir/", "", $entry);
             $commands[$key] = require_once("$entry/config.php");
