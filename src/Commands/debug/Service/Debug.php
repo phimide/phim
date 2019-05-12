@@ -82,7 +82,7 @@ class Debug extends BaseService
             } else {
                 if (substr($this->options['variable'], 0, 6) === 'self::') {
                     $variableBlock = $this->options['variable'];
-                } else if (substr($options['variable'], 0, 8) === 'static::') {
+                } else if (substr($this->options['variable'], 0, 8) === 'static::') {
                     $variableBlock = $this->options['variable'];
                 } else if (substr($this->options['variable'], 0, 8) === 'parent::') {
                     $variableBlock = $this->options['variable'];
