@@ -1,5 +1,5 @@
 <?php
-function phim_debug_inspect($outputFile, $variable, $isSpecificVar = false, $depth, $variableName = '')
+function phim_debug_inspect($variable, $isSpecificVar = false, $depth, $variableName = '')
 {
     $output = "";
     if (strlen($variableName) > 0) {
@@ -32,7 +32,7 @@ function phim_debug_inspect($outputFile, $variable, $isSpecificVar = false, $dep
 
     $output .= implode("\n", $result);
     $output .= "\n\n";
-    file_put_contents($outputFile, $output, \FILE_APPEND);
+    echo $output;
 }
 
 function phim_var_debug($variable,$depth,$strlen=300,$width=200,$i=0,&$objects = array())
