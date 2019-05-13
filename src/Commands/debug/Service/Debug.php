@@ -55,10 +55,7 @@ class Debug extends BaseService
         $phimDebugDir = __DIR__.'/../scripts';
         $content = file_get_contents($sourceFile);
         $lines = explode("\n", $content);
-        $exitBlock = "";
-        if (isset($this->options['hardbreak']) && $this->options['hardbreak'] == 1) {
-            $exitBlock = "exit";
-        }
+        $exitBlock = "exit";
 
         $depth = 3;
         if (isset($this->options['depth'])) {
