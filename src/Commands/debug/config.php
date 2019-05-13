@@ -19,17 +19,9 @@ return [
             'description' => 'The variable to inspect',
             'require' => false
         ],
-        'hardbreak' => [
-            'description' => 'Whether we want to hardbreak on breakpoint or not',
-            'require' => false
-        ],
         'depth' => [
             'description' => 'The maximum depth for variable inspection',
             'require' => false
         ],
-        'output' => [
-            'description' => 'The file containing the debugging details',
-            'require' => true
-        ]
     ]
 ];

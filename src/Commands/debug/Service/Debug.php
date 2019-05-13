@@ -13,7 +13,6 @@ class Debug extends BaseService
         $sourceFile = $this->options['file'];
         $lineNumber = $this->options['line'];
         $this->cmd = $this->options['cmd'];
-        $this->outputFile = $this->options['output'];
 
         //clean all previous breakpoints
         $this->cleanBreakpoints($sourceFile);
@@ -27,10 +26,8 @@ class Debug extends BaseService
             $this->cleanBreakpoints($sourceFile);
             print "Error adding breakpoint, syntax error\n";
         } else {
-            file_put_contents($this->outputFile,"");
-
             //run the cmd and forget about the output
-            shell_exec($this->cmd.' &');
+            echo shell_exec($this->cmd);
             //clean up the break points again
             $this->cleanBreakpoints($sourceFile);
         }
@@ -72,7 +69,7 @@ class Debug extends BaseService
 
         if (!isset($this->options['variable'])) {
             //no variable is specified, inspect all user defined variables
-            $inspectBlock = "{$this->phimInspectBeginningBlock} require_once('{$phimDebugDir}/phim_debug_inspect.php');phim_debug_spect('{$this->outputFile}', get_defined_vars(), false, $depth);$exitBlock;";
+            $inspectBlock = "{$this->phimInspectBeginningBlock} require_once('{$phimDebugDir}/phim_debug_inspect.php');phim_debug_inspect(get_defined_vars(), false, $depth);$exitBlock;";
         } else {
             $variableBlock = "";
             //do not include the first $ sign
@@ -91,7 +88,7 @@ class Debug extends BaseService
                 }
             }
             //just inspect the specific variable
-            $inspectBlock = "{$this->phimInspectBeginningBlock} require_once('{$phimDebugDir}/phim_debug_inspect.php');\$phim_debug_var=$variableBlock;phim_debug_inspect('{$this->outputFile}', \$phim_debug_var, true, $depth, '{$this->options['variable']}');$exitBlock;";
+            $inspectBlock = "{$this->phimInspectBeginningBlock} require_once('{$phimDebugDir}/phim_debug_inspect.php');\$phim_debug_var=$variableBlock;phim_debug_inspect(\$phim_debug_var, true, $depth, '{$this->options['variable']}');$exitBlock;";
         }
 
         $lines[$lineNumber - 1] .= $inspectBlock;
