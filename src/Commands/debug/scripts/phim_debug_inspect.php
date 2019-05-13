@@ -6,7 +6,9 @@ function phim_debug_inspect($variable, $isSpecificVar = false, $depth, $variable
         $output .= "Inspecting variable: $variableName\n";
     }
     if (!$isSpecificVar) {
-        $variable = array_diff_key($variable, array_flip(['GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv']));
+        $variable = array_diff_key($variable, array_flip(
+            array('GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv')
+        ));
         $output .= phim_var_debug($variable, $depth);
     } else {
         $output .= phim_var_debug($variable, $depth);
@@ -18,16 +20,14 @@ function phim_debug_inspect($variable, $isSpecificVar = false, $depth, $variable
 
     $e = new Exception();
     $trace = explode("\n", $e->getTraceAsString());
-    // reverse array to make steps line up chronologically
     $trace = array_reverse($trace);
-    array_shift($trace); // remove {main}
-    //array_pop($trace); // remove call to this method
+    array_shift($trace); 
     $length = count($trace);
-    $result = [];
+    $result = array();
 
     for ($i = 0; $i < $length; $i++)
     {
-        $result[] = ($i + 1)  . '.' . substr($trace[$i], strpos($trace[$i], ' '));
+        array_push($result, ($i + 1)  . '.' . substr($trace[$i], strpos($trace[$i], ' ')));
     }
 
     $output .= implode("\n", $result);
@@ -51,8 +51,6 @@ function phim_var_debug($variable,$depth,$strlen=300,$width=200,$i=0,&$objects =
     case 'unknown type': $string.= '???';                    break;
     case 'string':
         $len = strlen($variable);
-        //$variable = str_replace($search,$replace,substr($variable,0,$strlen),$count);
-        //$variable = substr($variable,0,$strlen);
         if ($len<$strlen) $string.= $variable;
         else $string.= $variable;
         break;
@@ -100,12 +98,6 @@ function phim_var_debug($variable,$depth,$strlen=300,$width=200,$i=0,&$objects =
     }
 
     if ($i>0) return $string;
-
-    /*
-    $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-    do $caller = array_shift($backtrace); while ($caller && !isset($caller['file']));
-    if ($caller) $string = $caller['file'].':'.$caller['line']."\n".$string;
-     */
 
     return $string;
 }

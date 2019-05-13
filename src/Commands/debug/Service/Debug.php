@@ -85,12 +85,20 @@ class Debug extends BaseService
                 }
             }
             //just inspect the specific variable
-            $inspectBlock = "{$this->phimInspectBeginningBlock} require_once('{$phimDebugDir}/phim_debug_inspect.php');\$phim_debug_var=$variableBlock;phim_debug_inspect(\$phim_debug_var, true, $depth, '{$this->options['variable']}');$exitBlock;";
+            $phimDebugInspectContent = $this->getDebugInspectScriptContent();
+            $inspectBlock = "{$this->phimInspectBeginningBlock} $phimDebugInspectContent \$phim_debug_var=$variableBlock;phim_debug_inspect(\$phim_debug_var, true, $depth, '{$this->options['variable']}');$exitBlock;";
         }
 
         $lines[$lineNumber - 1] .= $inspectBlock;
         $newFileContent = implode("\n", $lines);
         file_put_contents($sourceFile, $newFileContent);
+    }
+
+    private function getDebugInspectScriptContent() {
+        $content = file_get_contents(__DIR__ . '/../scripts/phim_debug_inspect.php');
+        $content = str_replace("<?php\n","", $content);
+        $content = str_replace("\n","", $content);
+        return $content;
     }
 
     private function isSyntaxOk($sourceFile) {
