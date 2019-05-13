@@ -65,8 +65,8 @@ class Debug extends BaseService
         $inspectBlock = "";
 
         if (!isset($this->options['variable'])) {
-            //no variable is specified, inspect all user defined variables
-            $inspectBlock = "{$this->phimInspectBeginningBlock} require_once('{$phimDebugDir}/phim_debug_inspect.php');phim_debug_inspect(get_defined_vars(), false, $depth);$exitBlock;";
+            $phimDebugInspectContent = $this->getDebugInspectScriptContent();
+            $inspectBlock = "{$this->phimInspectBeginningBlock} $phimDebugInspectContent phim_debug_inspect(get_defined_vars(), false, $depth);$exitBlock;";
         } else {
             $variableBlock = "";
             //do not include the first $ sign
