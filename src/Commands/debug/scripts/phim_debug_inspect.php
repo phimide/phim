@@ -1,12 +1,14 @@
 <?php
-function phim_debug_inspect($outputFile, $variable, $isSpecificVar = false, $depth, $variableName = '')
+function phim_debug_inspect($variable, $isSpecificVar = false, $depth, $variableName = '')
 {
     $output = "";
     if (strlen($variableName) > 0) {
         $output .= "Inspecting variable: $variableName\n";
     }
     if (!$isSpecificVar) {
-        $variable = array_diff_key($variable, array_flip(array('GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv')));
+        $variable = array_diff_key($variable, array_flip(
+            array('GLOBALS', '_FILES', '_COOKIE', '_POST', '_GET', '_SERVER', '_ENV', '_REQUEST', 'argc', 'argv')
+        ));
         $output .= phim_var_debug($variable, $depth);
     } else {
         $output .= phim_var_debug($variable, $depth);
@@ -19,7 +21,7 @@ function phim_debug_inspect($outputFile, $variable, $isSpecificVar = false, $dep
     $e = new Exception();
     $trace = explode("\n", $e->getTraceAsString());
     $trace = array_reverse($trace);
-    array_shift($trace);
+    array_shift($trace); 
     $length = count($trace);
     $result = array();
 
@@ -30,7 +32,7 @@ function phim_debug_inspect($outputFile, $variable, $isSpecificVar = false, $dep
 
     $output .= implode("\n", $result);
     $output .= "\n\n";
-    echo $output; exit;
+    echo $output;
 }
 
 function phim_var_debug($variable,$depth,$strlen=300,$width=200,$i=0,&$objects = array())
