@@ -6,7 +6,6 @@ use Core\BaseService as BaseService;
 class Debug extends BaseService
 {
     private $phimInspectBeginningBlock = "/* phim_inspect_start */";
-    private $outputFile;
     private $cmd;
 
     public function start() {
