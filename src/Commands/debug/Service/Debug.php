@@ -6,7 +6,6 @@ use Core\BaseService as BaseService;
 class Debug extends BaseService
 {
     private $phimInspectBeginningBlock = "/* phim_inspect_start */";
-    private $outputFile;
     private $cmd;
 
     public function start() {
@@ -26,7 +25,7 @@ class Debug extends BaseService
             $this->cleanBreakpoints($sourceFile);
             print "Error adding breakpoint, syntax error\n";
         } else {
-            //run the cmd and forget about the output
+            //run the cmd
             echo shell_exec($this->cmd);
             //clean up the break points again
             $this->cleanBreakpoints($sourceFile);
