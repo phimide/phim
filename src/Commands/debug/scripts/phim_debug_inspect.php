@@ -18,10 +18,10 @@ function phim_debug_inspect($variable, $isSpecificVar = false, $depth, $variable
 
     $output .= "Call Trace:\n";
 
-    $e = new Exception();
+    $e = new \Exception();
     $trace = explode("\n", $e->getTraceAsString());
     $trace = array_reverse($trace);
-    array_shift($trace); 
+    array_shift($trace);
     $length = count($trace);
     $result = array();
 
