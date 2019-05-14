@@ -1,6 +1,8 @@
 <?php
 namespace Core;
 
+use Util\FileUtil;
+
 class ProjectInitializer
 {
     public function init($info, $dataRoot) {
@@ -20,11 +22,10 @@ class ProjectInitializer
     /**
      * save the project index
      */
-    public function createIndex($projectpath, $fileExtensions, $project) {
-        //find all php files
-        $cmd = "find $projectpath -type f -name \"*.php\" -not -path \"*.git*\"";
-        $output = shell_exec($cmd);
-        $fileList = explode("\n", trim($output));
+    public function createIndex($projectPath, $fileExtensions, $project) {
+        //find all files with the file exentions
+        $fileUtil = new FileUtil();
+        $fileList = $fileUtil->getFileLists($projectPath, $fileExtensions);
         $functionFinder = '/function[\s\n]+(.[a-zA-Z0-9_\-]+)[\s\n]*\(/';
         $classFinders = [
             '/class[\s\n]+(.[a-zA-Z0-9_\-]+)[a-zA-Z0-9_,\-\s\n]*{/',
