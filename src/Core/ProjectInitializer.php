@@ -28,7 +28,7 @@ class ProjectInitializer
         $fileList = $fileUtil->getFileLists($projectPath, $fileExtensions);
         $functionFinder = '/function[\s\n]+(.[a-zA-Z0-9_\-]+)[\s\n]*\(/';
         $classFinders = [
-            '/class[\s\n]+(.[a-zA-Z0-9_\-]+)[a-zA-Z0-9_,\-\s\n]*{/',
+            '/class[\s\n]+(.[a-zA-Z0-9_\-]+)[a-zA-Z0-9_,\-\s\n\\\\]*{/',
             '/interface[\s\n]+(.[a-zA-Z0-9_\-]+)[a-zA-Z0-9,\-\s\n]*{/',
             '/trait[\s\n]+(.[a-zA-Z0-9_\-]+)[a-zA-Z0-9,\-\s\n]*{/'
         ];
