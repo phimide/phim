@@ -49,7 +49,6 @@ class Bootstrap
 
     public function init() {
         $args = $this->cli->parse($GLOBALS['argv']);
-        $command = $args->getCommand();
         $this->serviceName = $this->commandInfo['service'];
         $serviceClass = "Service\\{$this->serviceName}";
         $options = $args->getOpts();
