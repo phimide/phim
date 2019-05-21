@@ -6,14 +6,20 @@ class WordSearchEngine
     private $projectHash;
     private $dataRoot;
     private $dataDir;
+    private $indexFilePath;
 
     public function __construct($projectHash, $dataRoot) {
         $this->projectHash = $projectHash;
         $this->dataRoot = $dataRoot;
         $this->dataDir = $this->dataRoot.'/'.$this->projectHash;
+        $this->indexFilePath = $this->dataRoot.'/'.$this->projectHash.'.index';
     }
 
     public function doSearch($file, $contextLine, $contextPosition) {
+        if (!file_exists($this->indexFilePath)) {
+            return "";
+        }
+        $indexMap = json_decode(file_get_contents($this->indexFilePath), true);
         $possibleFileInfos = [];
 
         $wordInfo = $this->getWordFromLineAndPosition($contextLine, $contextPosition);
@@ -26,9 +32,9 @@ class WordSearchEngine
             $classPath = $wordSplits[0];
             $classPathSplits = explode("/", $classPath);
             $className = array_pop($classPathSplits);
-            $classIndex = $this->dataDir."/class.$className.index";
-            if (file_exists($classIndex)) {
-                $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
+            $classIndex = "class.$className.index";
+            if (isset($indexMap[$classIndex])) {
+                $fileInfos = $indexMap[$classIndex];
                 $patterns = [$classPath, $className];
                 foreach($patterns as $pattern) {
                     foreach($fileInfos as $fileInfo) {
@@ -44,9 +50,9 @@ class WordSearchEngine
             }
 
             $functionName = $wordSplits[1];
-            $functionIndex = $this->dataDir."/function.$functionName.index";
-            if (file_exists($functionIndex)) {
-                $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
+            $functionIndex = "function.$functionName.index";
+            if (isset($indexMap[$functionIndex])) {
+                $fileInfos = $indexMap[$functionIndex];
                 foreach($fileInfos as $fileInfo) {
                     $file = explode(":", $fileInfo)[0];
                     if (isset($possibleFileInfos[$file])) {
@@ -59,9 +65,9 @@ class WordSearchEngine
             $classPath = $wordSplits[0];
             $classPathSplits = explode("/", $classPath);
             $className = array_pop($classPathSplits);
-            $classIndex = $this->dataDir."/class.$className.index";
-            if (file_exists($classIndex)) {
-                $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
+            $classIndex = "class.$className.index";
+            if (isset($indexMap[$classIndex])) {
+                $fileInfos = $indexMap[$classIndex];
                 $patterns = [$classPath, $className];
                 foreach($patterns as $pattern) {
                     foreach($fileInfos as $fileInfo) {
@@ -79,9 +85,9 @@ class WordSearchEngine
             if (count($possibleFileInfos) === 0) {
                 //no class|trait|interface is matched, try to find in function index
                 $functionName = $className;
-                $functionIndex = $this->dataDir."/function.$functionName.index";
-                if (file_exists($functionIndex)) {
-                    $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
+                $functionIndex = "function.$functionName.index";
+                if (isset($indexMap[$functionIndex])) {
+                    $fileInfos = $indexMap[$functionIndex];
                     foreach($fileInfos as $fileInfo) {
                         $file = explode(":", $fileInfo)[0];
                         $possibleFileInfos[$file] = $fileInfo;

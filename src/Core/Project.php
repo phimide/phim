@@ -9,11 +9,13 @@ class Project {
     private $projectHash;
     private $dataRoot;
     private $dataDir;
+    private $indexPath;
 
     public function __construct($projectHash, $dataRoot) {
         $this->projectHash = $projectHash;
         $this->dataRoot = $dataRoot;
         $this->dataDir = $this->dataRoot.'/'.$this->projectHash;
+        $this->indexPath = $this->dataRoot.'/'.$this->projectHash.'.index';
     }
 
     public function getProjectHash() {
@@ -25,9 +27,9 @@ class Project {
     }
 
     public function searchWordInIndex($word) {
-        $dataDir = $this->dataRoot.'/'.$this->projectHash;
+        $indexMap = $this->getIndexMap();
+        print_r($indexMap);exit;
         if (strlen($word) > 0) {
-            $searchPatterns = [];
             $wordCompsByTwoColons =  explode("::", $word);
 
             $className = "";
@@ -37,7 +39,6 @@ class Project {
             if (count($wordCompsByTwoColons) > 1) { //this is like class::member
                 $className = array_pop($wordCompsByForwardSlashes);
                 $functionName = $wordCompsByTwoColons[1];
-                $searchPatterns[] = $className;
             } else {
                 //this is possibly be a class
                 $className = array_pop($wordCompsByForwardSlashes);
@@ -115,5 +116,23 @@ class Project {
             $indexFilePath = $this->dataDir.'/'.$indexType.'.'.$indexName.'.index';
             file_put_contents($indexFilePath, $indexContent, \FILE_APPEND);
         }
+    }
+
+    /**
+     * save index one time
+     */
+    public function saveIndex($indexContent) {
+        file_put_contents($this->indexPath, $indexContent);
+    }
+
+    /**
+     * get the index map
+     */
+    public function getIndexMap() {
+        $map = [];
+        if (file_exists($this->indexPath)) {
+            $map = json_decode(file_get_contents($this->indexPath), true);
+        }
+        return $map;
     }
 }
