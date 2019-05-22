@@ -12,6 +12,7 @@ class ListFiles extends BaseService
         $projectPath = $projectInfo['projectPath'];
         $fileExtensions = $projectInfo['fileExtensions'];
         $fileUtil = new FileUtil();
-        echo $fileUtil->getFileListsContent($projectPath, $fileExtensions);
+        $result = $fileUtil->getFileListsContent($projectPath, $fileExtensions);
+        return $result;
     }
 }

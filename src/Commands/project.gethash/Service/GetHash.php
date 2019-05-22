@@ -9,6 +9,6 @@ class GetHash extends BaseService
     public function start() {
         $projectInfo = ProjectInfoParser::parse($this->options['project']);
         $result = $projectInfo['projectHash'];
-        echo $result;
+        return $result;
     }
 }

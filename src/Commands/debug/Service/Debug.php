@@ -23,13 +23,15 @@ class Debug extends BaseService
         if (!$this->isSyntaxOk($sourceFile)) {
             //there is syntax errors, clean the breakpoint
             $this->cleanBreakpoints($sourceFile);
-            print "Error adding breakpoint, syntax error\n";
+            $result = "Error adding breakpoint, syntax error\n";
         } else {
             //run the cmd
-            echo shell_exec($this->cmd);
+            $result = shell_exec($this->cmd);
             //clean up the break points again
             $this->cleanBreakpoints($sourceFile);
         }
+
+        return $result;
     }
 
     private function cleanBreakpoints($sourceFile) {

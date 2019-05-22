@@ -24,8 +24,7 @@ class Search extends BaseService
         $resultLength = strlen(trim($result));
 
         if ($resultLength > 0) {
-            echo $result;
-            return;
+            return $result;
         }
     }
 }

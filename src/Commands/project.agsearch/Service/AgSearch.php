@@ -29,6 +29,6 @@ class AgSearch extends BaseService
 
         $result = trim($result);
 
-        echo $result;
+        return $result;
     }
 }
