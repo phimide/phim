@@ -1,8 +1,12 @@
 <?php
 namespace Util;
 
+use Util\MessageEncoder;
+
 class WordSearchEngine
 {
+    const REDIS_KEY_PREFIX = "phim_index_";
+
     private $projectHash;
     private $dataRoot;
     private $dataDir;
@@ -19,7 +23,7 @@ class WordSearchEngine
         if (!file_exists($this->indexFilePath)) {
             return "";
         }
-        $indexMap = json_decode(file_get_contents($this->indexFilePath), true);
+        $indexMap = $this->getIndexMap();
         $possibleFileInfos = [];
 
         $wordInfo = $this->getWordFromLineAndPosition($contextLine, $contextPosition);
@@ -98,6 +102,27 @@ class WordSearchEngine
 
         $result = $this->getResultFromFileInfos($possibleFileInfos);
 
+        return $result;
+    }
+
+    protected function getIndexMap() {
+        $result = [];
+        try {
+            $redis = new \Redis();
+            $redis->connect('127.0.0.1', 6379);
+            $key = static::REDIS_KEY_PREFIX."_".$this->projectHash;
+            if ($redis->exists($key)) {
+                //redis key exists, fetch from redis
+                $result = MessageEncoder::decode($redis->get($key));
+            } else {
+                //redis key does not exist, generate it
+                $indexContent = file_get_contents($this->indexFilePath);
+                $redis->set($key, $indexContent);
+                $result = MessageEncoder::decode($indexContent);
+            }
+        } catch(\RedisException $e) {
+            $result = MessageEncoder::decode(file_get_contents($this->indexFilePath));
+        }
         return $result;
     }
 

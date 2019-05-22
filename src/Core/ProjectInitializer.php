@@ -2,6 +2,7 @@
 namespace Core;
 
 use Util\FileUtil;
+use Util\MessageEncoder;
 
 class ProjectInitializer
 {
@@ -62,6 +63,6 @@ class ProjectInitializer
             }
         }
 
-        $project->saveIndex(json_encode($result));
+        $project->saveIndex(MessageEncoder::encode($result));
     }
 }
