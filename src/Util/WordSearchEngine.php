@@ -2,21 +2,25 @@
 namespace Util;
 
 use Util\MessageEncoder;
+use Core\ProjectInfoParser;
 
 class WordSearchEngine
 {
     const REDIS_KEY_PREFIX = "phim_index_";
 
-    private $projectHash;
+    private $project;
     private $dataRoot;
     private $dataDir;
     private $indexFilePath;
+    private $projectPath;
 
-    public function __construct($projectHash, $dataRoot) {
-        $this->projectHash = $projectHash;
+    public function __construct($project, $dataRoot) {
+        $this->project = $project;
         $this->dataRoot = $dataRoot;
-        $this->dataDir = $this->dataRoot.'/'.$this->projectHash;
-        $this->indexFilePath = $this->dataRoot.'/'.$this->projectHash.'.index';
+        $projectInfo = ProjectInfoParser::parse($project);
+        $projectHash = $projectInfo['projectHash'];
+        $this->indexFilePath = $this->dataRoot.'/'.$projectHash.'.index';
+        $this->projectPath = $projectInfo['projectPath'];
     }
 
     public function doSearch($file, $contextLine, $contextPosition) {
@@ -96,6 +100,29 @@ class WordSearchEngine
                         $file = explode(":", $fileInfo)[0];
                         $possibleFileInfos[$file] = $fileInfo;
                     }
+                } else {
+                    //if there are no result found, simply do a ag search
+                    $cmd = "cd {$this->projectPath}; ag \"{$word}\" --skip-vcs-ignores";
+                    $output = trim(shell_exec($cmd));
+                    $lines = explode("\n", $output);
+
+                    $result = "";
+                    $lineNumber = 0;
+                    foreach($lines as $line) {
+                        if (strlen($line) > 0) {
+                            $lineNumber ++;
+                            $lineSplits = explode(":", $line);
+                            $file = array_shift($lineSplits);
+                            $lineLocation = array_shift($lineSplits);
+                            $matchInfo = implode(":", $lineSplits);
+                            $line  = $this->projectPath."/".$file."(".$lineLocation.") ".$matchInfo;
+                            $result .= $lineNumber . ". " .$line."\n";
+                        }
+                    }
+
+                    $result = trim($result);
+
+                    return $result;
                 }
             }
         }
@@ -149,6 +176,7 @@ class WordSearchEngine
 ')' => 1,
 '(' => 1,
 '!' => 1,
+' ' => 1,
 ];
 
         //look to the left

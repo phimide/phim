@@ -8,8 +8,6 @@ use Util\WordSearchEngine as WordSearchEngine;
 class Search extends BaseService
 {
     public function start() {
-        $project = new Project($this->options['projecthash'], $this->config['dataRoot']);
-
         $file = $this->options['file'];
         $line = $this->options['line'];
 
@@ -18,7 +16,7 @@ class Search extends BaseService
         $contextLine = $lines[$line - 1];
         $contextPosition = $this->options['pos'];
 
-        $searchEngine = new WordSearchEngine($this->options['projecthash'], $this->config['dataRoot']);
+        $searchEngine = new WordSearchEngine($this->options['project'], $this->config['dataRoot']);
         $result = $searchEngine->doSearch($file, $contextLine, $contextPosition);
 
         $resultLength = strlen(trim($result));
