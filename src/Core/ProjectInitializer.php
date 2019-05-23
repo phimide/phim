@@ -11,8 +11,6 @@ class ProjectInitializer
         $projectHash = $projectInfo['projectHash'];
         $projectPath = $projectInfo['projectPath'];
         $fileExtensions = $projectInfo['fileExtensions'];
-        $dataDir = $dataRoot.'/'.$projectHash;
-        system("mkdir -p {$dataDir}");
 
         $project = new Project($projectHash, $dataRoot);
 
