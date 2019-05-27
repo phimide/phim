@@ -9,9 +9,6 @@ class Project {
     private $projectHash;
     private $projectPath;
     private $fileExtensions;
-    private $dataRoot;
-    private $dataDir;
-    private $indexPath;
 
     public function __construct($rawProjectInfo) {
         $projectInfo = $this->parse($rawProjectInfo);
@@ -127,28 +124,55 @@ class Project {
         return $result;
     }
 
+    public function createIndex() {
+        $fileExtensionsStr = implode("|", $this->fileExtensions);
+        $indexMap = [];
+        $finders = [
+            'function' => 'function[\s\n]+(.[a-zA-Z0-9_\-]+)[\s\n]*\(',
+            'class' => 'class[\s\n]+(.[a-zA-Z0-9_\-]+)[a-zA-Z0-9_,\-\s\n\\\\\\\\]*{',
+            'interface' => 'interface[\s\n]+(.[a-zA-Z0-9_\-]+)[a-zA-Z0-9,\-\s\n]*{',
+            'trait' => 'trait[\s\n]+(.[a-zA-Z0-9_\-]+)[a-zA-Z0-9,\-\s\n]*{',
+        ];
+
+        foreach($finders as $type => $pattern) {
+            $cmd = "cd {$this->projectPath}; ag --skip-vcs-ignores -G '\.($fileExtensionsStr)$' \"".$pattern."\" | grep \"$type \"";
+            $output = shell_exec($cmd);
+            $lines = explode("\n", trim($output));
+            foreach($lines as $line) {
+                if (strlen($line) > 0) {
+                    $pos = strpos($line, "$type ");
+                    $key = substr($line, $pos);
+                    $key = str_replace("$type ","", $key);
+
+                    if ($type === 'function') {
+                        $comps = explode("(", $key);
+                        $key = trim($comps[0]);
+                    } else {
+                        $comps = explode(" ", $key);
+                        $key = trim($comps[0]);
+                    }
+                    if ($key !== '__construct') {
+                        $realKey = "";
+                        if ($type === "function") {
+                            $realKey = "function.$key.index";
+                        } else {
+                            $realKey = "class.$key.index";
+                        }
+                        $indexMap[$realKey][] = $line;
+                    }
+                }
+            }
+        }
+
+        $this->saveIndexes($indexMap);
+    }
     public function clearIndexs() {
         $cmd = "find {$this->dataDir} -type f -name \"*.index\" -delete";
         shell_exec($cmd);
     }
 
-    /**
-     * save a single index item
-     */
-    public function saveSingleIndex($indexType, $indexName, $indexContent) {
-        if (strlen($indexName) > 0 &&
-            $indexName[0] !== '*'
-        )  {
-            $indexFilePath = $this->dataDir.'/'.$indexType.'.'.$indexName.'.index';
-            file_put_contents($indexFilePath, $indexContent, \FILE_APPEND);
-        }
-    }
-
-    /**
-     * save index one time
-     */
-    public function saveIndex($indexContent) {
-        file_put_contents($this->indexPath, $indexContent);
+    public function saveIndexes($indexMap) {
+        print_r($indexMap);exit;
     }
 
     /**
