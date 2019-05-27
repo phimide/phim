@@ -10,8 +10,16 @@ class ProjectDB
     }
 
     public function getRowsFromSQL($sql) {
+        $res = $this->dbh->query($sql, \PDO::FETCH_ASSOC);
+        $rows = [];
+        foreach($res as $row) {
+            $rows[] = $row;
+        }
+        return $rows;
     }
 
     public function doSQL($sql) {
+        $count = $this->dbh->exec($sql);
+        return $count;
     }
 }
