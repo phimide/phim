@@ -3,8 +3,15 @@ namespace Core;
 
 class ProjectDB
 {
+    private $dbh;
+
     public function __construct($dbConfig) {
-        $dbh = new \PDO("{$dbConfig['type']}:host={$dbConfig['host']};dbname={$dbConfig['name']}", $dbConfig['user'], $dbConfig['pass']);
-        var_dump($dbh);
+        $this->dbh = new \PDO("{$dbConfig['type']}:host={$dbConfig['host']};dbname={$dbConfig['name']}", $dbConfig['user'], $dbConfig['pass']);
+    }
+
+    public function getRowsFromSQL($sql) {
+    }
+
+    public function doSQL($sql) {
     }
 }
