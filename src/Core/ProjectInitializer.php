@@ -8,14 +8,10 @@ class ProjectInitializer
 {
     public function init($info, $dataRoot) {
         $projectInfo = ProjectInfoParser::parse($info);
-        $projectHash = $projectInfo['projectHash'];
-        $projectPath = $projectInfo['projectPath'];
-        $fileExtensions = $projectInfo['fileExtensions'];
-
-        $project = new Project($projectHash, $dataRoot);
+        $project = new Project($projectInfo);
 
         //create the project index
-        $this->createIndex($projectPath, $fileExtensions, $project);
+        $this->createIndex($project);
     }
 
     /**

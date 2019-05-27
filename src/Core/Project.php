@@ -7,15 +7,16 @@ namespace Core;
 
 class Project {
     private $projectHash;
+    private $projectPath;
+    private $fileExtensions;
     private $dataRoot;
     private $dataDir;
     private $indexPath;
 
-    public function __construct($projectHash, $dataRoot) {
-        $this->projectHash = $projectHash;
-        $this->dataRoot = $dataRoot;
-        $this->dataDir = $this->dataRoot.'/'.$this->projectHash;
-        $this->indexPath = $this->dataRoot.'/'.$this->projectHash.'.index';
+    public function __construct($projectInfo) {
+        $this->projectHash = $projectInfo['projectHash'];
+        $this->projectPath = $projectInfo['projectPath'];
+        $this->fileExtensions = $projectInfo['fileExtensions'];
     }
 
     public function getProjectHash() {
