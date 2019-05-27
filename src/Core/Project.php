@@ -13,10 +13,31 @@ class Project {
     private $dataDir;
     private $indexPath;
 
-    public function __construct($projectInfo) {
+    public function __construct($rawProjectInfo) {
+        $projectInfo = $this->parse($rawProjectInfo);
         $this->projectHash = $projectInfo['projectHash'];
         $this->projectPath = $projectInfo['projectPath'];
         $this->fileExtensions = $projectInfo['fileExtensions'];
+    }
+
+    public function parse($rawProjectInfo) {
+        $projectDetails = explode("|", $rawProjectInfo);
+        $path = trim($projectDetails[0]);
+        $fileExtensionsStr = trim($projectDetails[1]);
+        $fileExtensions = explode(",", $fileExtensionsStr);
+
+        $fileExtensionsCount = count($fileExtensions);
+        for ($i = 0; $i < $fileExtensionsCount; $i++) {
+            $fileExtensions[$i] = trim($fileExtensions[$i]);
+        }
+        $fileExtensionsStr = implode(",",$fileExtensions);
+        $projectHash = md5($path."|".$fileExtensionsStr);
+        $result = [
+            'projectPath' => $path,
+            'projectHash' => $projectHash,
+            'fileExtensions' => $fileExtensions
+        ];
+        return $result;
     }
 
     public function getProjectHash() {

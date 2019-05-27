@@ -1,14 +1,14 @@
 <?php
 namespace Service;
 
-use Core\BaseService as BaseService;
-use Core\ProjectInitializer as ProjectInitializer;
+use Core\BaseService;
+use Core\Project;
 
 class Initialize extends BaseService
 {
     public function start() {
         //we are going to initialize the project
-        $projectInitializer = new ProjectInitializer();
-        $projectInitializer->init($this->options['project'], $this->config['dataRoot']);
+        $project = new Project($this->options['project']);
+        $project->createIndex();
     }
 }
