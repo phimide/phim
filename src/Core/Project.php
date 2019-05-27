@@ -44,6 +44,10 @@ class Project {
         return $this->projectHash;
     }
 
+    public function getProjectPath() {
+        return $this->projectPath;
+    }
+
     public function getFileExtensions() {
         return $this->fileExtensions;
     }
