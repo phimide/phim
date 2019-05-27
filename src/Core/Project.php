@@ -135,6 +135,15 @@ class Project {
         ];
 
         foreach($finders as $type => $pattern) {
+            $realType = $type;
+            if ($type !== "function") {
+                $realType = "class";
+            }
+
+            if (!isset($indexMap[$realType])) {
+                $indexMap[$realType] = [];
+            }
+
             $cmd = "cd {$this->projectPath}; ag --skip-vcs-ignores -G '\.($fileExtensionsStr)$' \"".$pattern."\" | grep \"$type \"";
             $output = shell_exec($cmd);
             $lines = explode("\n", trim($output));
@@ -151,14 +160,9 @@ class Project {
                         $comps = explode(" ", $key);
                         $key = trim($comps[0]);
                     }
+
                     if ($key !== '__construct') {
-                        $realKey = "";
-                        if ($type === "function") {
-                            $realKey = "function.$key.index";
-                        } else {
-                            $realKey = "class.$key.index";
-                        }
-                        $indexMap[$realKey][] = $line;
+                        $indexMap[$realType][$key][] = $line;
                     }
                 }
             }
@@ -172,7 +176,7 @@ class Project {
     }
 
     public function saveIndexes($indexMap) {
-        print_r($indexMap);exit;
+        print_r($indexMap["class"]);exit;
     }
 
     /**
