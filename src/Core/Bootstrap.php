@@ -61,9 +61,13 @@ class Bootstrap
             }
         }
         if ($requirementIsMet) {
-            $service = new $serviceClass($options, $this->config);
-            //now start the service and also echo and service output
-            echo $service->start();
+            try {
+                $service = new $serviceClass($options, $this->config);
+                //now start the service and also echo and service output
+                print $service->start();
+            } catch (\Exception $e) {
+                print $e->getMessage()."\n";
+            }
         }
     }
 }
