@@ -7,11 +7,13 @@ class BaseService
 {
     protected $options;
     protected $config;
-    protected $projectDB;
 
     public function __construct($options, $config) {
         $this->options = $options;
         $this->config = $config;
-        $this->projectDB = new ProjectDB($config['db']);
+    }
+
+    public function getProjectDB() {
+        return $this->projectDB;
     }
 }

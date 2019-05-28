@@ -5,7 +5,9 @@ class ProjectDB
 {
     private $dbh;
 
-    public function __construct($dbConfig) {
+    public function __construct() {
+        $config = require (__DIR__."/../../config/config.php");
+        $dbConfig = $config['db'];
         $this->dbh = new \PDO("{$dbConfig['type']}:host={$dbConfig['host']};dbname={$dbConfig['name']}", $dbConfig['user'], $dbConfig['pass']);
     }
 
@@ -19,6 +21,7 @@ class ProjectDB
     }
 
     public function doSQL($sql) {
+        print $sql;exit;
         $count = $this->dbh->exec($sql);
         return $count;
     }

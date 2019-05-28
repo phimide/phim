@@ -5,6 +5,8 @@
  */
 namespace Core;
 
+use Core\ProjectDB;
+
 class Project {
     private $projectHash;
     private $projectPath;
@@ -168,15 +170,23 @@ class Project {
             }
         }
 
-        $this->saveIndexes($indexMap);
-    }
-    public function clearIndexs() {
-        $cmd = "find {$this->dataDir} -type f -name \"*.index\" -delete";
-        shell_exec($cmd);
+        $this->saveIndex($indexMap);
     }
 
-    public function saveIndexes($indexMap) {
-        print_r($indexMap["class"]);exit;
+    public function saveIndex($indexMap) {
+        $sql = "INSERT INTO phim_ide_project_index(project_hash,index_type,index_name,index_info) VALUES";
+        $valuesArr = [];
+        foreach($indexMap as $type => $info) {
+            foreach($info as $key => $lines) {
+                foreach($lines as $line) {
+                    $filteredLine = addslashes($line);
+                    $valuesArr[] = "('{$this->projectHash}','$type','$key','$filteredLine')";
+                }
+            }
+        }
+        $sql .= implode(",",$valuesArr);
+        $projectDB = new ProjectDB();
+        $projectDB->doSQL($sql);
     }
 
     /**
