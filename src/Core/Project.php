@@ -174,7 +174,7 @@ class Project {
     }
 
     public function saveIndex($indexMap) {
-        $sql = "INSERT INTO phim_ide_project_index(project_hash,index_type,index_name,index_info) VALUES";
+        $sql = "DELETE FROM phim_ide_project_index WHERE project_hash = '{$this->projectHash}';INSERT INTO phim_ide_project_index(project_hash,index_type,index_name,index_info) VALUES";
         $valuesArr = [];
         foreach($indexMap as $type => $info) {
             foreach($info as $key => $lines) {
