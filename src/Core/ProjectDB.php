@@ -21,7 +21,6 @@ class ProjectDB
     }
 
     public function doSQL($sql) {
-        print $sql;exit;
         $count = $this->dbh->exec($sql);
         return $count;
     }
