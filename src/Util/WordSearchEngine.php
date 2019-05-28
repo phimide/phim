@@ -3,6 +3,7 @@ namespace Util;
 
 use Util\MessageEncoder;
 use Core\ProjectInfoParser;
+use Core\ProjectDB;
 
 class WordSearchEngine
 {
@@ -24,10 +25,10 @@ class WordSearchEngine
     }
 
     public function doSearch($file, $contextLine, $contextPosition) {
+        $projectDB = new ProjectDB();
         if (!file_exists($this->indexFilePath)) {
             return "";
         }
-        $indexMap = $this->getIndexMap();
         $possibleFileInfos = [];
 
         $wordInfo = $this->getWordFromLineAndPosition($contextLine, $contextPosition);
@@ -73,7 +74,7 @@ class WordSearchEngine
             $classPath = $wordSplits[0];
             $classPathSplits = explode("/", $classPath);
             $className = array_pop($classPathSplits);
-            $classIndex = "class.$className.index";
+            $sql = "SELECT * ";
             if (isset($indexMap[$classIndex])) {
                 $fileInfos = $indexMap[$classIndex];
                 $patterns = [$classPath, $className];

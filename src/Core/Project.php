@@ -53,81 +53,6 @@ class Project {
         return $this->fileExtensions;
     }
 
-    public function searchWordInIndex($word) {
-        $indexMap = $this->getIndexMap();
-        print_r($indexMap);exit;
-        if (strlen($word) > 0) {
-            $wordCompsByTwoColons =  explode("::", $word);
-
-            $className = "";
-            $functionName = "";
-
-            $wordCompsByForwardSlashes = explode("/", $wordCompsByTwoColons[0]);
-            if (count($wordCompsByTwoColons) > 1) { //this is like class::member
-                $className = array_pop($wordCompsByForwardSlashes);
-                $functionName = $wordCompsByTwoColons[1];
-            } else {
-                //this is possibly be a class
-                $className = array_pop($wordCompsByForwardSlashes);
-            }
-
-            $possibleFileInfos = [];
-            if (strlen($className) > 0) {
-                //search the class index
-                $classIndex = $dataDir."/class.$className.index";
-                $classPath = $wordCompsByTwoColons[0];
-                $classFiles = [];
-                $classFilesBySimilarity = [];
-                if (file_exists($classIndex)) {
-                    $fileInfos = explode("\n",trim(file_get_contents($classIndex)));
-                    $possibleFileInfos = $fileInfos;
-                    foreach($fileInfos as $fileInfo) {
-                        $file = explode(":", $fileInfo)[0];
-                        $classFiles[] = $file;
-                        $similarity = \similar_text($file, $classPath);
-                        $fileInfosBySimilarity[$similarity] = $fileInfo;
-                    }
-                    if (count($fileInfosBySimilarity) > 0) {
-                        krsort($fileInfosBySimilarity);
-                        $possibleFileInfos = array_values($fileInfosBySimilarity);
-                    }
-                }
-            }
-
-            if (strlen($functionName) > 0) {
-                $functionIndex = $dataDir."/function.$functionName.index";
-                $fileInfos = explode("\n",trim(file_get_contents($functionIndex)));
-                if (strlen($className) > 0) { //we search for class::member
-                    $commonFileInfos = [];
-                    if (file_exists($functionIndex)) {
-                        foreach($fileInfos as $fileInfo) {
-                            $file = explode(":", $fileInfo)[0];
-                            if (in_array($file, $classFiles)) {
-                                $commonFileInfos[] = $fileInfo;
-                            }
-                        }
-                    }
-                    if (count($commonFileInfos) > 0) {
-                        $possibleFileInfos = $commonFileInfos;
-                    }
-                }
-            }
-        }
-
-        //construct the result
-        $result = "";
-        $lineNum = 0;
-        foreach($possibleFileInfos as $fileInfo) {
-            $lineNum ++;
-            $comps = explode(":", $fileInfo);
-            $filePath = $comps[0];
-            $line = $comps[1];
-            $result .= "$lineNum. {$filePath}({$line})\n";
-        }
-
-        return $result;
-    }
-
     public function createIndex() {
         $fileExtensionsStr = implode("|", $this->fileExtensions);
         $indexMap = [];
@@ -205,14 +130,163 @@ CREATE TABLE {$this->projectTable} (project_hash varchar(32),index_type varchar(
         $projectDB->doSQL($sql);
     }
 
-    /**
-     * get the index map
-     */
-    public function getIndexMap() {
-        $map = [];
-        if (file_exists($this->indexPath)) {
-            $map = json_decode(file_get_contents($this->indexPath), true);
+    public function searchWord($contextLine, $contextPosition) {
+        $projectDB = new ProjectDB();
+        $word = $this->getWordFromLineAndPosition($contextLine, $contextPosition);
+        $wordSplits = explode("::", $word);
+        $wordSplitsCount = count($wordSplits);
+        if ($wordSplitsCount === 2) {
+            //pattern: class::member
+            $classPath = $wordSplits[0];
+            $classPathSplits = explode("/", $classPath);
+            $className = array_pop($classPathSplits);
+            $classIndex = "class.$className.index";
+            if (isset($indexMap[$classIndex])) {
+                $fileInfos = $indexMap[$classIndex];
+                $patterns = [$classPath, $className];
+                foreach($patterns as $pattern) {
+                    foreach($fileInfos as $fileInfo) {
+                        $file = explode(":", $fileInfo)[0];
+                        if (strpos($file, $pattern) !== FALSE) {
+                            $possibleFileInfos[$file] = $fileInfo;
+                        }
+                    }
+                    if (count($possibleFileInfos) > 0) {
+                        break;
+                    }
+                }
+            }
+
+            $functionName = $wordSplits[1];
+            $functionIndex = "function.$functionName.index";
+            if (isset($indexMap[$functionIndex])) {
+                $fileInfos = $indexMap[$functionIndex];
+                foreach($fileInfos as $fileInfo) {
+                    $file = explode(":", $fileInfo)[0];
+                    if (isset($possibleFileInfos[$file])) {
+                        $possibleFileInfos[$file] = $fileInfo;
+                    }
+                }
+            }
+        } else if ($wordSplitsCount === 1) {
+            //pattern: class|trait|function
+            $classPath = $wordSplits[0];
+            $classPathSplits = explode("/", $classPath);
+            $className = array_pop($classPathSplits);
+            $sql = "SELECT * from {$this->projectTable} WHERE index_type = 'class' AND index_name = '$className'";
+
+            $rows = $projectDB->getRowsFromSQL($sql);
+
+            if (count($rows) > 0) {
+                $fileInfos = [];
+                foreach($rows as $row) {
+                    $fileInfos[] = $row['index_info'];
+                }
+                $result = implode("\n", $fileInfos);
+                return $result;
+            } else {
+                //no class|trait|interface is matched, try to find in function index
+                $functionName = $className;
+                $sql = "SELECT * from {$this->projectTable} WHERE index_type = 'function' AND index_name = '$functionName'";
+            }
+
+            /*
+            if (count($possibleFileInfos) === 0) {
+                //no class|trait|interface is matched, try to find in function index
+                $functionName = $className;
+                $functionIndex = "function.$functionName.index";
+                if (isset($indexMap[$functionIndex])) {
+                    $fileInfos = $indexMap[$functionIndex];
+                    foreach($fileInfos as $fileInfo) {
+                        $file = explode(":", $fileInfo)[0];
+                        $possibleFileInfos[$file] = $fileInfo;
+                    }
+                } else {
+                    //if there are no result found, simply do a ag search
+                    $cmd = "cd {$this->projectPath}; ag \"{$word}\" --skip-vcs-ignores";
+                    $output = trim(shell_exec($cmd));
+                    $lines = explode("\n", $output);
+
+                    $result = "";
+                    $lineNumber = 0;
+                    foreach($lines as $line) {
+                        if (strlen($line) > 0) {
+                            $lineNumber ++;
+                            $lineSplits = explode(":", $line);
+                            $file = array_shift($lineSplits);
+                            $lineLocation = array_shift($lineSplits);
+                            $matchInfo = implode(":", $lineSplits);
+                            $line  = $this->projectPath."/".$file."(".$lineLocation.") ".$matchInfo;
+                            $result .= $lineNumber . ". " .$line."\n";
+                        }
+                    }
+
+                    $result = trim($result);
+
+                    return $result;
+                }
+            }
+             */
+
         }
-        return $map;
+    }
+
+    private function getWordFromLineAndPosition($contextLine, $contextPosition) {
+        $leftStoppingSymbolsHash = [
+',' => 1,
+';' => 1,
+' ' => 1,
+'[' => 1,
+'\'' => 1,
+'+' => 1,
+')' => 1,
+'(' => 1,
+'>' => 1,
+'!' => 1,
+];
+        $rightStoppingSymbolsHash = [
+            ' ' => 1,
+';' => 1,
+',' => 1,
+'{' => 1,
+']' => 1,
+'\'' => 1,
+')' => 1,
+'(' => 1,
+'!' => 1,
+' ' => 1,
+];
+
+        //look to the left
+        $wordLeftPos = $contextPosition;
+        for ($i = $contextPosition - 1; $i >= 0; $i--) {
+            $char = $contextLine[$i];
+            if (isset($leftStoppingSymbolsHash[$char])) {
+                break;
+            }
+            $wordLeftPos = $i;
+        }
+        //look to the right
+        $contextLineLength = strlen($contextLine);
+        $wordRightPos = $contextPosition + 1;
+        for ($i = $contextPosition + 1; $i < $contextLineLength; $i++) {
+            $char = $contextLine[$i];
+            if (isset($rightStoppingSymbolsHash[$char])) {
+                break;
+            }
+            $wordRightPos = $i;
+        }
+
+        $wordLeftPart = substr($contextLine, $wordLeftPos, $contextPosition - $wordLeftPos);
+        $wordRightPart = substr($contextLine, $contextPosition, $wordRightPos - $contextPosition + 1);
+        $word = $wordLeftPart.$wordRightPart;
+
+        //sometimes windows will leave a ^M character, we need to remove it
+        $word = str_ireplace("\x0D", "", $word);
+
+        //also, replace \ to /
+        $word = str_replace("\\", "/", $word);
+
+        return $word;
     }
 }

@@ -12,8 +12,4 @@ class BaseService
         $this->options = $options;
         $this->config = $config;
     }
-
-    public function getProjectDB() {
-        return $this->projectDB;
-    }
 }
