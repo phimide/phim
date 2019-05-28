@@ -9,12 +9,14 @@ use Core\ProjectDB;
 
 class Project {
     private $projectHash;
+    private $projectTable;
     private $projectPath;
     private $fileExtensions;
 
     public function __construct($rawProjectInfo) {
         $projectInfo = $this->parse($rawProjectInfo);
         $this->projectHash = $projectInfo['projectHash'];
+        $this->projectTable = "phim_ide_project_{$this->projectHash}_index";
         $this->projectPath = $projectInfo['projectPath'];
         $this->fileExtensions = $projectInfo['fileExtensions'];
     }
@@ -174,7 +176,22 @@ class Project {
     }
 
     public function saveIndex($indexMap) {
-        $sql = "DELETE FROM phim_ide_project_index WHERE project_hash = '{$this->projectHash}';INSERT INTO phim_ide_project_index(project_hash,index_type,index_name,index_info) VALUES";
+        $projectDB = new ProjectDB();
+
+        $sql = "
+DROP TABLE IF EXISTS {$this->projectTable};
+CREATE TABLE {$this->projectTable} (project_hash varchar(32),index_type varchar(10),
+    index_name varchar(255),
+    index_info text,
+    key(project_hash),
+    key(index_type),
+    key(index_name)
+)
+";
+
+        $projectDB->doSQL($sql);
+
+        $sql = "INSERT INTO {$this->projectTable}(project_hash,index_type,index_name,index_info) VALUES";
         $valuesArr = [];
         foreach($indexMap as $type => $info) {
             foreach($info as $key => $lines) {
@@ -185,7 +202,6 @@ class Project {
             }
         }
         $sql .= implode(",",$valuesArr);
-        $projectDB = new ProjectDB();
         $projectDB->doSQL($sql);
     }
 
