@@ -263,7 +263,7 @@ CREATE TABLE {$this->projectTable} (project_hash varchar(32),index_type varchar(
         }
     }
 
-    private function getResultFromFileInfos($possibleFileInfos) {
+    public function getResultFromFileInfos($possibleFileInfos) {
         $result = "";
         $lineNum = 0;
         foreach($possibleFileInfos as $fileInfo) {

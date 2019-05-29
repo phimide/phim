@@ -1,33 +1,19 @@
 <?php
 namespace Service;
 
-use Core\BaseService as BaseService;
-use Core\ProjectInfoParser as ProjectInfoParser;
+use Core\BaseService;
+use Core\Project;
 
 class AgSearch extends BaseService
 {
     public function start() {
-        $projectInfo = ProjectInfoParser::parse($this->options['project']);
-        $projectPath = trim(shell_exec('cd '.$projectInfo['projectPath'].'; pwd'));
-        $cmd = "ag \"{$this->options['word']}\" --skip-vcs-ignores";
+        $project = new Project($this->options['project']);
+        $projectPath = $project->getProjectPath();
+        $cmd = "cd $projectPath; ag \"{$this->options['word']}\" --skip-vcs-ignores";
         $output = trim(shell_exec($cmd));
-        $lines = explode("\n", $output);
+        $fileInfos = explode("\n", $output);
 
-        $result = "";
-        $lineNumber = 0;
-        foreach($lines as $line) {
-            if (strlen($line) > 0) {
-                $lineNumber ++;
-                $lineSplits = explode(":", $line);
-                $file = array_shift($lineSplits);
-                $lineLocation = array_shift($lineSplits);
-                $matchInfo = implode(":", $lineSplits);
-                $line  = $projectPath."/".$file."(".$lineLocation.") ".$matchInfo;
-                $result .= $lineNumber . ". " .$line."\n";
-            }
-        }
-
-        $result = trim($result);
+        $result = $project->getResultFromFileInfos($fileInfos);
 
         return $result;
     }
