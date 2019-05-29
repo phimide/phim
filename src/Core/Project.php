@@ -196,6 +196,29 @@ CREATE TABLE {$this->projectTable} (project_hash varchar(32),index_type varchar(
                     }
                     $result = $this->getResultFromFileInfos($fileInfos);
                     return $result;
+                } else { //still not found in function index, just simply do an ag search
+                    //if there are no result found, simply do a ag search
+                    $cmd = "cd {$this->projectPath}; ag \"{$word}\" --skip-vcs-ignores";
+                    $output = trim(shell_exec($cmd));
+                    $lines = explode("\n", $output);
+
+                    $result = "";
+                    $lineNumber = 0;
+                    foreach($lines as $line) {
+                        if (strlen($line) > 0) {
+                            $lineNumber ++;
+                            $lineSplits = explode(":", $line);
+                            $file = array_shift($lineSplits);
+                            $lineLocation = array_shift($lineSplits);
+                            $matchInfo = implode(":", $lineSplits);
+                            $line  = $this->projectPath."/".$file."(".$lineLocation.") ".$matchInfo;
+                            $result .= $lineNumber . ". " .$line."\n";
+                        }
+                    }
+
+                    $result = trim($result);
+
+                    return $result;
                 }
             }
 
