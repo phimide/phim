@@ -182,12 +182,21 @@ CREATE TABLE {$this->projectTable} (project_hash varchar(32),index_type varchar(
                 foreach($rows as $row) {
                     $fileInfos[] = $row['index_info'];
                 }
-                $result = implode("\n", $fileInfos);
+                $result = $this->getResultFromFileInfos($fileInfos);
                 return $result;
             } else {
                 //no class|trait|interface is matched, try to find in function index
                 $functionName = $className;
                 $sql = "SELECT * from {$this->projectTable} WHERE index_type = 'function' AND index_name = '$functionName'";
+                $rows = $projectDB->getRowsFromSQL($sql);
+                if (count($rows) > 0) {
+                    $fileInfos = [];
+                    foreach($rows as $row) {
+                        $fileInfos[] = $row['index_info'];
+                    }
+                    $result = $this->getResultFromFileInfos($fileInfos);
+                    return $result;
+                }
             }
 
             /*
@@ -229,6 +238,23 @@ CREATE TABLE {$this->projectTable} (project_hash varchar(32),index_type varchar(
              */
 
         }
+    }
+
+    private function getResultFromFileInfos($possibleFileInfos) {
+        $result = "";
+        $lineNum = 0;
+        foreach($possibleFileInfos as $fileInfo) {
+            $lineNum ++;
+            $comps = explode(":", $fileInfo);
+            $filePath = $comps[0];
+            $line = $comps[1];
+            $detail = "";
+            if (isset($comps[2])) {
+                $detail = $comps[2];
+            }
+            $result .= "$lineNum. {$filePath}({$line}) $detail\n";
+        }
+        return $result;
     }
 
     private function getWordFromLineAndPosition($contextLine, $contextPosition) {
