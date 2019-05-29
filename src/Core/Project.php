@@ -200,66 +200,13 @@ CREATE TABLE {$this->projectTable} (project_hash varchar(32),index_type varchar(
                     //if there are no result found, simply do a ag search
                     $cmd = "cd {$this->projectPath}; ag \"{$word}\" --skip-vcs-ignores";
                     $output = trim(shell_exec($cmd));
-                    $lines = explode("\n", $output);
+                    $fileInfos = explode("\n", $output);
 
-                    $result = "";
-                    $lineNumber = 0;
-                    foreach($lines as $line) {
-                        if (strlen($line) > 0) {
-                            $lineNumber ++;
-                            $lineSplits = explode(":", $line);
-                            $file = array_shift($lineSplits);
-                            $lineLocation = array_shift($lineSplits);
-                            $matchInfo = implode(":", $lineSplits);
-                            $line  = $this->projectPath."/".$file."(".$lineLocation.") ".$matchInfo;
-                            $result .= $lineNumber . ". " .$line."\n";
-                        }
-                    }
-
-                    $result = trim($result);
+                    $result = $this->getResultFromFileInfos($fileInfos);
 
                     return $result;
                 }
             }
-
-            /*
-            if (count($possibleFileInfos) === 0) {
-                //no class|trait|interface is matched, try to find in function index
-                $functionName = $className;
-                $functionIndex = "function.$functionName.index";
-                if (isset($indexMap[$functionIndex])) {
-                    $fileInfos = $indexMap[$functionIndex];
-                    foreach($fileInfos as $fileInfo) {
-                        $file = explode(":", $fileInfo)[0];
-                        $possibleFileInfos[$file] = $fileInfo;
-                    }
-                } else {
-                    //if there are no result found, simply do a ag search
-                    $cmd = "cd {$this->projectPath}; ag \"{$word}\" --skip-vcs-ignores";
-                    $output = trim(shell_exec($cmd));
-                    $lines = explode("\n", $output);
-
-                    $result = "";
-                    $lineNumber = 0;
-                    foreach($lines as $line) {
-                        if (strlen($line) > 0) {
-                            $lineNumber ++;
-                            $lineSplits = explode(":", $line);
-                            $file = array_shift($lineSplits);
-                            $lineLocation = array_shift($lineSplits);
-                            $matchInfo = implode(":", $lineSplits);
-                            $line  = $this->projectPath."/".$file."(".$lineLocation.") ".$matchInfo;
-                            $result .= $lineNumber . ". " .$line."\n";
-                        }
-                    }
-
-                    $result = trim($result);
-
-                    return $result;
-                }
-            }
-             */
-
         }
     }
 
@@ -267,15 +214,17 @@ CREATE TABLE {$this->projectTable} (project_hash varchar(32),index_type varchar(
         $result = "";
         $lineNum = 0;
         foreach($possibleFileInfos as $fileInfo) {
-            $lineNum ++;
-            $comps = explode(":", $fileInfo);
-            $filePath = $comps[0];
-            $line = $comps[1];
-            $detail = "";
-            if (isset($comps[2])) {
-                $detail = $comps[2];
+            if (strlen($fileInfo) > 0) {
+                $lineNum ++;
+                $comps = explode(":", $fileInfo);
+                $filePath = $comps[0];
+                $line = $comps[1];
+                $detail = "";
+                if (isset($comps[2])) {
+                    $detail = $comps[2];
+                }
+                $result .= "$lineNum. {$filePath}({$line}) $detail\n";
             }
-            $result .= "$lineNum. {$filePath}({$line}) $detail\n";
         }
         return $result;
     }
