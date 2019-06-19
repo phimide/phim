@@ -140,35 +140,23 @@ CREATE TABLE {$this->projectTable} (project_hash varchar(32),index_type varchar(
             $classPath = $wordSplits[0];
             $classPathSplits = explode("/", $classPath);
             $className = array_pop($classPathSplits);
-            $classIndex = "class.$className.index";
-            if (isset($indexMap[$classIndex])) {
-                $fileInfos = $indexMap[$classIndex];
-                $patterns = [$classPath, $className];
-                foreach($patterns as $pattern) {
-                    foreach($fileInfos as $fileInfo) {
-                        $file = explode(":", $fileInfo)[0];
-                        if (strpos($file, $pattern) !== FALSE) {
-                            $possibleFileInfos[$file] = $fileInfo;
-                        }
-                    }
-                    if (count($possibleFileInfos) > 0) {
-                        break;
-                    }
+
+            $sql = "SELECT * from {$this->projectTable} WHERE index_type = 'class' AND index_name = '$className'";
+
+            $rows = $projectDB->getRowsFromSQL($sql);
+
+            if (count($rows) > 0) {
+                $fileInfos = [];
+                foreach($rows as $row) {
+                    $fileInfos[] = $row['index_info'];
                 }
+                $result = $this->getResultFromFileInfos($fileInfos);
+                return $result;
             }
 
+            //@TODO: process function as well
             $functionName = $wordSplits[1];
-            $functionIndex = "function.$functionName.index";
-            if (isset($indexMap[$functionIndex])) {
-                $fileInfos = $indexMap[$functionIndex];
-                foreach($fileInfos as $fileInfo) {
-                    $file = explode(":", $fileInfo)[0];
-                    if (isset($possibleFileInfos[$file])) {
-                        $possibleFileInfos[$file] = $fileInfo;
-                    }
-                }
-            }
-        } else if ($wordSplitsCount === 1) {
+          } else if ($wordSplitsCount === 1) {
             //pattern: class|trait|function
             $classPath = $wordSplits[0];
             $classPathSplits = explode("/", $classPath);
