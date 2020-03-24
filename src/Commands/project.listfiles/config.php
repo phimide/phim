@@ -1,7 +1,7 @@
 <?php
 return [
-    'service' => 'GetHash',
-    'description' => 'Get the project hash',
+    'service' => 'ListFiles',
+    'description' => 'list files in a project',
     'options' => [
         'project' => [
             'description' => 'Project Information',

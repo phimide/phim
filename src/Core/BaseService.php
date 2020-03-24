@@ -1,6 +1,8 @@
 <?php
 namespace Core;
 
+use Core\ProjectDB;
+
 class BaseService
 {
     protected $options;

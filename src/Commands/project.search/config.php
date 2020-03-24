@@ -3,8 +3,8 @@ return [
     'service' => 'Search',
     'description' => 'Search words in a project',
     'options' => [
-        'projecthash' => [
-            'description' => 'Project Hash',
+        'project' => [
+            'description' => 'Project Information',
             'require' => true
         ],
         'file' => [

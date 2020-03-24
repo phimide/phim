@@ -26,7 +26,7 @@ class Bootstrap
             $commandDir = $GLOBALS['rootDir']."/../src/Commands/$command";
             $commandConfigFile = "$commandDir/config.php";
             $commandInfo = require_once($commandConfigFile);
-            $GLOBALS['loader']->add("Service", "$commandDir"); //lazy loading 
+            $GLOBALS['loader']->add("Service", "$commandDir"); //lazy loading
             $GLOBALS['loader']->register();
             $this->commandInfo = $commandInfo;
             foreach($commandInfo['options'] as $optionValue => $optionDetails) {
@@ -39,7 +39,7 @@ class Bootstrap
     public function loadAllCommands() {
         $commands = [];
         $commandDir = $GLOBALS['rootDir']."/../src/Commands";
-        $entries = explode("\n", trim(shell_exec("find $commandDir -type d -name 'project.*'")));
+        $entries = explode("\n", trim(shell_exec("find $commandDir -type d -depth 1")));
         foreach($entries as $entry) {
             $key = str_replace("$commandDir/", "", $entry);
             $commands[$key] = require_once("$entry/config.php");
@@ -49,7 +49,6 @@ class Bootstrap
 
     public function init() {
         $args = $this->cli->parse($GLOBALS['argv']);
-        $command = $args->getCommand();
         $this->serviceName = $this->commandInfo['service'];
         $serviceClass = "Service\\{$this->serviceName}";
         $options = $args->getOpts();
@@ -62,8 +61,13 @@ class Bootstrap
             }
         }
         if ($requirementIsMet) {
-            $service = new $serviceClass($options, $this->config);
-            $service->start();
+            try {
+                $service = new $serviceClass($options, $this->config);
+                //now start the service and also echo and service output
+                print $service->start();
+            } catch (\Exception $e) {
+                print $e->getMessage()."\n";
+            }
         }
     }
 }

@@ -6,14 +6,12 @@ use Core\BaseService as BaseService;
 class Debug extends BaseService
 {
     private $phimInspectBeginningBlock = "/* phim_inspect_start */";
-    private $outputFile;
     private $cmd;
 
     public function start() {
         $sourceFile = $this->options['file'];
         $lineNumber = $this->options['line'];
         $this->cmd = $this->options['cmd'];
-        $this->outputFile = $this->options['output'];
 
         //clean all previous breakpoints
         $this->cleanBreakpoints($sourceFile);
@@ -25,15 +23,15 @@ class Debug extends BaseService
         if (!$this->isSyntaxOk($sourceFile)) {
             //there is syntax errors, clean the breakpoint
             $this->cleanBreakpoints($sourceFile);
-            print "Error adding breakpoint, syntax error\n";
+            $result = "Error adding breakpoint, syntax error\n";
         } else {
-            file_put_contents($this->outputFile,"");
-
-            //run the cmd and forget about the output
-            shell_exec($this->cmd.' &');
+            //run the cmd
+            $result = shell_exec($this->cmd);
             //clean up the break points again
             $this->cleanBreakpoints($sourceFile);
         }
+
+        return $result;
     }
 
     private function cleanBreakpoints($sourceFile) {
@@ -58,10 +56,7 @@ class Debug extends BaseService
         $phimDebugDir = __DIR__.'/../scripts';
         $content = file_get_contents($sourceFile);
         $lines = explode("\n", $content);
-        $exitBlock = "";
-        if (isset($this->options['hardbreak']) && $this->options['hardbreak'] == 1) {
-            $exitBlock = "exit";
-        }
+        $exitBlock = "exit";
 
         $depth = 3;
         if (isset($this->options['depth'])) {
@@ -71,8 +66,8 @@ class Debug extends BaseService
         $inspectBlock = "";
 
         if (!isset($this->options['variable'])) {
-            //no variable is specified, inspect all user defined variables
-            $inspectBlock = "{$this->phimInspectBeginningBlock} require_once('{$phimDebugDir}/phim_debug_inspect.php');phim_debug_spect('{$this->outputFile}', get_defined_vars(), false, $depth);$exitBlock;";
+            $phimDebugInspectContent = $this->getDebugInspectScriptContent();
+            $inspectBlock = "{$this->phimInspectBeginningBlock} $phimDebugInspectContent phim_debug_inspect(get_defined_vars(), false, $depth);$exitBlock;";
         } else {
             $variableBlock = "";
             //do not include the first $ sign
@@ -82,7 +77,7 @@ class Debug extends BaseService
             } else {
                 if (substr($this->options['variable'], 0, 6) === 'self::') {
                     $variableBlock = $this->options['variable'];
-                } else if (substr($options['variable'], 0, 8) === 'static::') {
+                } else if (substr($this->options['variable'], 0, 8) === 'static::') {
                     $variableBlock = $this->options['variable'];
                 } else if (substr($this->options['variable'], 0, 8) === 'parent::') {
                     $variableBlock = $this->options['variable'];
@@ -91,12 +86,20 @@ class Debug extends BaseService
                 }
             }
             //just inspect the specific variable
-            $inspectBlock = "{$this->phimInspectBeginningBlock} require_once('{$phimDebugDir}/phim_debug_inspect.php');\$phim_debug_var=$variableBlock;phim_debug_inspect('{$this->outputFile}', \$phim_debug_var, true, $depth, '{$this->options['variable']}');$exitBlock;";
+            $phimDebugInspectContent = $this->getDebugInspectScriptContent();
+            $inspectBlock = "{$this->phimInspectBeginningBlock} $phimDebugInspectContent \$phim_debug_var=$variableBlock;phim_debug_inspect(\$phim_debug_var, true, $depth, '{$this->options['variable']}');$exitBlock;";
         }
 
         $lines[$lineNumber - 1] .= $inspectBlock;
         $newFileContent = implode("\n", $lines);
         file_put_contents($sourceFile, $newFileContent);
+    }
+
+    private function getDebugInspectScriptContent() {
+        $content = file_get_contents(__DIR__ . '/../scripts/phim_debug_inspect.php');
+        $content = str_replace("<?php\n","", $content);
+        $content = str_replace("\n","", $content);
+        return $content;
     }
 
     private function isSyntaxOk($sourceFile) {
